@@ -87,13 +87,12 @@ This is an example of how to list things you need to use the software and how to
    ```sh
    git clone https://github.com/your_username_/Project-Name.git
    ```
-3. Install NPM packages
+3. Install Anaconda Manager
    ```sh
-   npm install
+   wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
    ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
+   ```
+    bash Anaconda3-2020.02-Linux-x86_64.sh
    ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
