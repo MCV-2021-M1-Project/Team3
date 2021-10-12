@@ -1,9 +1,9 @@
 import os
-from PIL import Image
+from PIL import Image, ImageChops
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
-
+from similarity import L1_norm
 
 VALID_IMAGE_FORMATS = ['JPEG']
 
@@ -18,20 +18,20 @@ class Museum(object):
     extrat its feature descriptors.
     """
 
-    def __init__(self, data_set_path):
-        self.image_dataset = self.load_images_dataset(data_set_path)        
+    def __init__(self, data_set_path: str, rm_frame:bool = False):
+        self.rm_frame = rm_frame
+        self.image_dataset = self.load_images_dataset(data_set_path)
 
-    def load_images_dataset(self, path_images):
+    def load_images_dataset(self, image_path: str, ):
         """
         Method to load the image from dataset path
         """
         image_dataset = {}
-        for image_name in os.listdir(path_images)[:50]:
-            if self.file_is_image(os.path.join(path_images, image_name)):
-                image = cv2.imread(os.path.join(path_images, image_name))
-                hist = self.compute_histogram(image)
-                #cv2.imshow("",image)
-                #cv2.waitKey(0)
+        for image_name in os.listdir(image_path):
+            if self.file_is_image(os.path.join(image_path, image_name)):
+                image = cv2.imread(os.path.join(image_path, image_name))
+                if self.rm_frame:
+                    image = self.remove_frame(image)
                 image_num = self.get_image_number(image_name)
                 image_dataset[image_num] = {
                     "image_name": image_name,
@@ -39,24 +39,26 @@ class Museum(object):
                 }
         return image_dataset
     
-    def load_query_img(self, image_path):
+    def load_query_img(self, image_path: str):
         if self.file_is_image(image_path):
             image = cv2.imread(image_path)
+            if self.rm_frame:
+                image = self.remove_frame(image)
             return image
         else:
             raise FileIsNotImageError("The provided file does not match an Image type")
 
-    def compute_similarity(self, image_path, simalarity_fn):
+    def compute_similarity(self, image_path: str, simalarity_fn: callable):
         result = []
         query_img = self.load_query_img(image_path)  
-        query_img_hist = self.compute_histogram(query_img)
+        query_img_hist = self.compute_histogram(query_img, color="gray")
         for image in self.image_dataset.keys():
-            image_hist = self.compute_histogram(self.image_dataset[image]["image_obj"])
-            sim_result = simalarity_fn(image_hist, query_img_hist, cv2.HISTCMP_BHATTACHARYYA)
+            image_hist = self.compute_histogram(self.image_dataset[image]["image_obj"], color="gray")
+            sim_result = simalarity_fn(image_hist, query_img_hist)
             result.append([image, sim_result])
         return result
 
-    def compute_histogram(self, image, color="gray", plot=False):
+    def compute_histogram(self, image: np.ndarray , color="gray", plot=False):
         """
         Method to compute the histogram of an image
         """
@@ -87,7 +89,7 @@ class Museum(object):
         return hist
 
     @staticmethod
-    def get_image_number(image_name):
+    def get_image_number(image_name:str):
         """
         Method to get the image number
         image_name(str)
@@ -96,7 +98,7 @@ class Museum(object):
         return int(image_num)
 
     @staticmethod
-    def file_is_image(image_path):
+    def file_is_image(image_path:str):
         """
         Method to check that a file is valid image 
         """
@@ -112,8 +114,24 @@ class Museum(object):
     def get_image_dataset(self):
         return self.image_dataset
 
-museum = Museum("/Users/manelguz/Team3/datasets/BBDD")
-result = museum.compute_similarity("/Users/manelguz/Team3/datasets/BBDD/bbdd_00002.jpg", cv2.compareHist)
+    @staticmethod
+    def remove_frame(image: np.ndarray, mark_perc:int =5):
+        """
+        Method to remove the background given a fixed number of pixels
+        """
+        pixels_to_remove = [
+            image.shape[0] * mark_perc // 100, 
+            image.shape[1] * mark_perc // 100
+        ]
+        image = image[
+            pixels_to_remove[0]:image.shape[0]-pixels_to_remove[0], 
+            pixels_to_remove[1]:image.shape[1]-pixels_to_remove[1]
+        ]
+        return image
+
+
+museum = Museum("datasets/BBDD", rm_frame=True)
+result = museum.compute_similarity("datasets/BBDD/bbdd_00002.jpg", L1_norm)
 print(result)
 #image = cv2.imread(args["image"])
 #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
