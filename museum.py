@@ -18,10 +18,11 @@ class Museum(object):
     extrat its feature descriptors.
     """
 
-    def __init__(self, data_set_path: str, rm_frame:bool = False,similarity_mode ="L1_norm"):
+    def __init__(self, data_set_path: str, similarity_mode: str ="L1_norm", color_space:str ="gray", rm_frame:bool = False):
         self.rm_frame = rm_frame
         self.image_dataset = self.load_images_dataset(data_set_path)
         self.similarity_mode = similarity_mode
+        self.color_space = color_space
 
     def load_images_dataset(self, image_path: str, ):
         """
@@ -48,18 +49,30 @@ class Museum(object):
             return image
         else:
             raise FileIsNotImageError("The provided file does not match an Image type")
+    
+    def compute_similarity(self, image_set: str):
+        set_result = []
+        if os.path.isdir(image_set):
+            for image in os.listdir(image_set):
+                try:
+                    set_result.append(self.compute_image_similarity(os.path.join(image_set,image)))
+                except FileIsNotImageError:
+                    pass
+        else:
+            set_result = self.compute_image_similarity(image_set)
+        return set_result
 
-    def compute_similarity(self, image_path: str):
+    def compute_image_similarity(self, image_path: str):
         result = []
         query_img = self.load_query_img(image_path)  
-        query_img_hist = self.compute_histogram(query_img, color="gray")
+        query_img_hist = self.compute_histogram(query_img)
         for image in self.image_dataset.keys():
-            image_hist = self.compute_histogram(self.image_dataset[image]["image_obj"], color="gray")
+            image_hist = self.compute_histogram(self.image_dataset[image]["image_obj"])
             sim_result = compute_similarity(image_hist, query_img_hist,self.similarity_mode)
             result.append([image, sim_result])
         return result
 
-    def compute_histogram(self, image: np.ndarray , color="gray", plot=False):
+    def compute_histogram(self, image: np.ndarray, plot=False):
         """
         Method to compute the histogram of an image
         """
@@ -69,7 +82,7 @@ class Museum(object):
             "hsv": cv2.COLOR_BGR2HSV,
             "lab": cv2.COLOR_BGR2LAB
         }
-        image = cv2.cvtColor(image, color_space[color])
+        image = cv2.cvtColor(image, color_space[self.color_space])
         
         chans = cv2.split(image) 
         hist_chan = []
@@ -131,8 +144,9 @@ class Museum(object):
         return image
 
 
-museum = Museum("datasets/BBDD", rm_frame=True)
-result = museum.compute_similarity("datasets/BBDD/bbdd_00002.jpg")
-print(result)
-#image = cv2.imread(args["image"])
-#image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+if __name__ == "__main__":
+    museum = Museum("datasets/BBDD", rm_frame=True)
+    result = museum.compute_similarity("datasets/BBDD/bbdd_00002.jpg")
+    print(result)
+    #image = cv2.imread(args["image"])
+    #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
