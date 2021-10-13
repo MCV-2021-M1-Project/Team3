@@ -11,11 +11,11 @@ def compute_similarity(vector_1: np.uint8, vector_2: np.uint8,mode:str) -> float
 
 
 def L1_norm(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
-    return np.linalg.norm(vector_1 - vector_2 )/(np.linalg.norm(vector_1)*np.linalg.norm(vector_2))
+    return np.linalg.norm(vector_1 - vector_2,1)
 
 
 def L2_norm(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
-    return np.linalg.norm(vector_1 - vector_2,)
+    return np.linalg.norm(vector_1 - vector_2,2)
 
 
 def cosine_similarity(vector_1: np.  uint8, vector_2: np.uint8) -> np.float32:
