@@ -1,17 +1,20 @@
 import argparse
+import os
+import argparse
 
 
 import museum
 from similarity import compute_similarity
 
 
-import argparse
+import results
+
 
 parser_epilog = \
 """
       Example given an image:\n
 
-      python3 main.py "datasets/museum_set" "datasets/query_set/00002.jpg" "L1_norm"\n
+      python3 main.py "datasets/museum_set" "datasets/qsd1_w1/00002.jpg" "L1_norm"\n
       
       Example given a quey path:\n
       
@@ -47,6 +50,12 @@ parser.add_argument('-c', '--color_space',
                        default="gray",
                        help='The color spaces avaliable for the histogram computation')
 
+parser.add_argument('-k', '--number_results',
+                       metavar='number_results',
+                       type=int,
+                       default=7,
+                       help='The number of top k elements that best match the given image')
+
 parser.add_argument('--remove_back',
                       dest='rm_background', 
                       action='store_true',
@@ -56,9 +65,41 @@ parser.set_defaults(rm_background=False)
 
 # Parse arguments
 args = parser.parse_args()
+k = args.number_results
+
+museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=True, similarity_mode=args.similarity, color_space=args.color_space)
+final_result = []
+if os.path.isdir(args.query_image_path):
+    for image in sorted(os.listdir(args.query_image_path)):
+        try:
+            result = museum_similarity_comparator.compute_similarity(os.path.join(args.query_image_path, image))
+        except museum.FileIsNotImageError:
+            continue
+        result.sort(key=lambda x: x[1], reverse=True) # resulting score sorted
+        result = result[:k] # take the k elements
+        result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
+        final_result.append(result)
+else:
+    result = museum_similarity_comparator.compute_similarity(args.query_image_path)
+    result.sort(key=lambda x: x[1], reverse=True) # resulting score sorted
+    result = result[:k]
+    final_result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
 
 
-museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=False, similarity_mode=args.similarity, color_space=args.color_space)
-result = museum_similarity_comparator.compute_similarity(args.query_image_path)
-print(result)
+# For evaluation purposes
+"""
+res = []
+gt = results.ground_truth("datasets/qsd1_w1/gt_corresps.pkl")
+for indx, query in enumerate(final_result):
+    print("query: " + str(query))
+    print("gt: " + str(gt[indx]))
+    res.append(query == gt[indx])
+print(sum(res))
+"""
 
+# Results for each similarity measure
+#cosine : 7
+#L1 : 2
+#L2 : 1
+#histogram_intersection: 2
+#hellinger_similarity: 0
