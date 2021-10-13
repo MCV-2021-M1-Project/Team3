@@ -5,10 +5,8 @@ import argparse
 
 import museum
 from similarity import compute_similarity
-
-
 import results
-
+from mapk import mapk
 
 parser_epilog = \
 """
@@ -53,7 +51,7 @@ parser.add_argument('-c', '--color_space',
 parser.add_argument('-k', '--number_results',
                        metavar='number_results',
                        type=int,
-                       default=7,
+                       default=1,
                        help='The number of top k elements that best match the given image')
 
 parser.add_argument('--remove_back',
@@ -66,6 +64,7 @@ parser.set_defaults(rm_background=False)
 # Parse arguments
 args = parser.parse_args()
 k = args.number_results
+gt = results.ground_truth("datasets/qsd1_w1/gt_corresps.pkl")
 
 museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=True, similarity_mode=args.similarity, color_space=args.color_space)
 final_result = []
@@ -79,6 +78,10 @@ if os.path.isdir(args.query_image_path):
         result = result[:k] # take the k elements
         result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
         final_result.append(result)
+        print(final_result)
+    mapk_result = mapk(gt, final_result, k=k)
+    print("Resulting Mapk:")
+    print(mapk_result)
 else:
     result = museum_similarity_comparator.compute_similarity(args.query_image_path)
     result.sort(key=lambda x: x[1], reverse=True) # resulting score sorted

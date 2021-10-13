@@ -1,3 +1,6 @@
+import numpy as np
+
+
 #Compute MAP given the actual_results and predicted_results lists (taking the most similar image for each query image)
 def apk(actual, predicted, k=10):
     """
@@ -54,5 +57,3 @@ def mapk(actual, predicted, k=10):
             The mean average precision at k over the input lists
     """
     return np.mean([apk(a,p,k) for a,p in zip(actual, predicted)])
-  
-mapk= mapk(actual_results, predicted_results, k=10)
