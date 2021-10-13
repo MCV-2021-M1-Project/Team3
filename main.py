@@ -74,7 +74,7 @@ if os.path.isdir(args.query_image_path):
             result = museum_similarity_comparator.compute_similarity(os.path.join(args.query_image_path, image))
         except museum.FileIsNotImageError:
             continue
-        result.sort(key=lambda x: x[1], reverse=True) # resulting score sorted
+        result.sort(key=lambda x: x[1]) # resulting score sorted
         result = result[:k] # take the k elements
         result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
         final_result.append(result)
@@ -83,7 +83,7 @@ if os.path.isdir(args.query_image_path):
     print(mapk_result)
 else:
     result = museum_similarity_comparator.compute_similarity(args.query_image_path)
-    result.sort(key=lambda x: x[1], reverse=True) # resulting score sorted
+    result.sort(key=lambda x: x[1]) # resulting score sorted
     result = result[:k]
     final_result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
 

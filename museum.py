@@ -82,13 +82,14 @@ class Museum(object):
             "hsv": cv2.COLOR_BGR2HSV,
             "lab": cv2.COLOR_BGR2LAB
         }
+
         image = cv2.cvtColor(image, color_space[self.color_space])
         
         chans = cv2.split(image) 
-        hist_chan = []
-        for channel in chans:
-            hist_chan.append(cv2.calcHist([channel], [0], None, [256], [0, 256]))
-        hist = np.concatenate((hist_chan))
+        if self.color_space != "hsv":
+            hist = self.compute_standard_histogram(chans)
+        else:
+            hist = self.compute_hsv_histogram(chans)
 
         #hist = hist.astype(np.uint8)
         if plot:
@@ -100,6 +101,26 @@ class Museum(object):
                 plt.plot(color_hist)
             plt.xlim([0, 256])
             plt.show()
+        return hist
+
+    def compute_standard_histogram(self, channels: np.ndarray):
+        hist_chan = []
+        for channel in channels:
+            hist = cv2.calcHist([channel], [0], None, [256], [0, 256])
+            hist = cv2.normalize(hist, hist)
+            hist_chan.append(hist)
+        hist = np.concatenate((hist_chan))
+        return hist
+
+    def compute_hsv_histogram(self, channels: np.ndarray):
+        # reduce the bins for brightness channel
+        hist_chan = []
+        max_bins = 256
+        for channel, bins, max_val in zip(channels,[int(180/(256/max_bins)), max_bins, int(max_bins/8)],[180,256,256]):
+            hist = cv2.calcHist([channel],[0], None, [bins], [0, max_val])
+            hist = cv2.normalize(hist, hist)
+            hist_chan.append(hist)
+        hist = np.concatenate((hist_chan))
         return hist
 
     @staticmethod
@@ -131,7 +152,7 @@ class Museum(object):
     @staticmethod
     def remove_frame(image: np.ndarray, mark_perc:int =5):
         """
-        Method to remove the background given a fixed number of pixels
+        Method to remove the marc given a fixed number of pixels
         """
         pixels_to_remove = [
             image.shape[0] * mark_perc // 100, 
