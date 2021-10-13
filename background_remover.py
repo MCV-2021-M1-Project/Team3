@@ -10,7 +10,7 @@ from numpy.lib.histograms import histogram
 class Canvas(object):
 
     def __init__(self): #input_image, adjust_gamma, make_bin_and_abjects, backgound_remover,
-    #connected_components, simplyfy_irrelevant, gray2rgb, save_mask):
+    #connected_components, simplyfy_irrelevant, gray2rgb, save_mask
 
         self.input_image #input_image
         self.adjust_gamma #adjust_gamma
