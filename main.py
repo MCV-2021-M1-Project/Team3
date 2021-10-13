@@ -78,7 +78,6 @@ if os.path.isdir(args.query_image_path):
         result = result[:k] # take the k elements
         result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
         final_result.append(result)
-        print(final_result)
     mapk_result = mapk(gt, final_result, k=k)
     print("Resulting Mapk:")
     print(mapk_result)
@@ -88,7 +87,10 @@ else:
     result = result[:k]
     final_result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
 
-
+print("Final Guess")
+print(final_result)
+print("Ground Truth")
+print(gt)
 # For evaluation purposes
 """
 res = []
