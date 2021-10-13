@@ -11,7 +11,7 @@ def compute_similarity(vector_1: np.uint8, vector_2: np.uint8,mode:str) -> float
 
 
 def L1_norm(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
-    return np.linalg.norm(vector_1 - vector_2,)
+    return np.linalg.norm(vector_1 - vector_2 )/(np.linalg.norm(vector_1)*np.linalg.norm(vector_2))
 
 
 def L2_norm(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
@@ -33,7 +33,7 @@ def hellinger_similarity(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
 switcher = {
     "L1_norm": L1_norm,
     "L2_norm": L2_norm,
-    "cosine_similairty": cosine_similarity,
+    "cosine_similarity": cosine_similarity,
     "histogram_intersection": histogram_intersection,
     "hellinger_similarity": hellinger_similarity,
 }
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     #img1 = cv2.imread("./datasets/qsd1_w2/00000.jpg")
     #img2 = cv2.imread("./datasets/qsd1_w2/00000.jpg")
     x = np.array([1, 1, 1, 1, 0, 0, 0, 0, 0]) 
-    y = np.array([0, 0, 1, 1, 1, 1, 0, 0, 0])
+    y = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1])
     for item in switcher.keys():
         similarity_score = compute_similarity(x,y,item)
         print("similarity with {} is {} with dtype {}".format(item,similarity_score,similarity_score.dtype))

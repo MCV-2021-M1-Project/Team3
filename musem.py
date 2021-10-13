@@ -3,7 +3,7 @@ from PIL import Image, ImageChops
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
-from similarity import L1_norm
+from similarity import compute_similarity
 
 VALID_IMAGE_FORMATS = ['JPEG']
 
@@ -18,9 +18,10 @@ class Museum(object):
     extrat its feature descriptors.
     """
 
-    def __init__(self, data_set_path: str, rm_frame:bool = False):
+    def __init__(self, data_set_path: str, rm_frame:bool = False,similarity_mode ="L1_norm"):
         self.rm_frame = rm_frame
         self.image_dataset = self.load_images_dataset(data_set_path)
+        self.similarity_mode = similarity_mode
 
     def load_images_dataset(self, image_path: str, ):
         """
@@ -48,13 +49,13 @@ class Museum(object):
         else:
             raise FileIsNotImageError("The provided file does not match an Image type")
 
-    def compute_similarity(self, image_path: str, simalarity_fn: callable):
+    def compute_similarity(self, image_path: str):
         result = []
         query_img = self.load_query_img(image_path)  
         query_img_hist = self.compute_histogram(query_img, color="gray")
         for image in self.image_dataset.keys():
             image_hist = self.compute_histogram(self.image_dataset[image]["image_obj"], color="gray")
-            sim_result = simalarity_fn(image_hist, query_img_hist)
+            sim_result = compute_similarity(image_hist, query_img_hist,self.similarity_mode)
             result.append([image, sim_result])
         return result
 
@@ -131,7 +132,7 @@ class Museum(object):
 
 
 museum = Museum("datasets/BBDD", rm_frame=True)
-result = museum.compute_similarity("datasets/BBDD/bbdd_00002.jpg", L1_norm)
+result = museum.compute_similarity("datasets/BBDD/bbdd_00002.jpg")
 print(result)
 #image = cv2.imread(args["image"])
 #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
