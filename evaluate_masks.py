@@ -41,8 +41,8 @@ def evaluate_mask(og_mask: np.ndarray, gen_mask: np.ndarray):
 if __name__ == '__main__':
 
     valid_images = [".png"]
-    load_directory = 'C:\\Users\\usuario\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\'
-    save_direcory = 'C:\\Users\\usuario\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\generated_masks\\'
+    load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\'
+    save_direcory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\generated_masks\\'
 
     for f in os.listdir(load_directory):
         file_name = typex = os.path.splitext(f)[0]
