@@ -4,7 +4,6 @@ import argparse
 
 
 import museum
-from similarity import compute_similarity
 import results
 from mapk import mapk
 
@@ -41,6 +40,13 @@ parser.add_argument('similarity',
                        choices=["L1_norm", "L2_norm", "cosine_similarity", "histogram_intersection", "hellinger_similarity"],
                        help='The similaritie measures avaliable to compute the measure')
 
+parser.add_argument('-m', '--metric',
+                       metavar='metric',
+                       type=str,
+                       choices=["gray","rgb_1d","rgb_3d","hsv","lab", "lab_3d"],
+                       default="gray",
+                       help='The color spaces avaliable for the histogram computation')
+
 parser.add_argument('-c', '--color_space',
                        metavar='color_space',
                        type=str,
@@ -71,7 +77,7 @@ final_result = []
 if os.path.isdir(args.query_image_path):
     for image in sorted(os.listdir(args.query_image_path)):
         try:
-            result = museum_similarity_comparator.compute_similarity(os.path.join(args.query_image_path, image))
+            result = museum_similarity_comparator.compute_similarity(os.path.join(args.query_image_path, image), args.metric)
         except museum.FileIsNotImageError:
             continue
         result.sort(key=lambda x: x[1]) # resulting score sorted
@@ -82,7 +88,7 @@ if os.path.isdir(args.query_image_path):
     print("Resulting Mapk:")
     print(mapk_result)
 else:
-    result = museum_similarity_comparator.compute_similarity(args.query_image_path)
+    result = museum_similarity_comparator.compute_similarity(args.query_image_path, args.metric)
     result.sort(key=lambda x: x[1]) # resulting score sorted
     result = result[:k]
     final_result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
@@ -101,10 +107,3 @@ for indx, query in enumerate(final_result):
     res.append(query == gt[indx])
 print(sum(res))
 """
-
-# Results for each similarity measure
-#cosine : 7
-#L1 : 2
-#L2 : 1
-#histogram_intersection: 2
-#hellinger_similarity: 0

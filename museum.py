@@ -50,58 +50,27 @@ class Museum(object):
         else:
             raise FileIsNotImageError("The provided file does not match an Image type")
     
-    def compute_similarity(self, image_set: str):
+    def compute_similarity(self, image_set: str, metric:str):
         set_result = []
         if os.path.isdir(image_set):
             for image in os.listdir(image_set):
                 try:
-                    set_result.append(self.compute_image_similarity(os.path.join(image_set,image)))
+                    set_result.append(self.compute_image_similarity(os.path.join(image_set,image), metric=metric))
                 except FileIsNotImageError:
                     pass
         else:
-            set_result = self.compute_image_similarity(image_set)
+            set_result = self.compute_image_similarity(image_set, metric=metric)
         return set_result
 
-    def compute_image_similarity(self, image_path: str):
+    def compute_image_similarity(self, image_path: str, metric:str ):
         result = []
         query_img = self.load_query_img(image_path)  
-        query_img_hist = self.compute_histogram(query_img)
+        query_img_hist = self.compute_histogram(query_img, metric=metric)
         for image in self.image_dataset.keys():
-            image_hist = self.compute_histogram(self.image_dataset[image]["image_obj"])
+            image_hist = self.compute_histogram(self.image_dataset[image]["image_obj"], metric=metric)
             sim_result = compute_similarity(image_hist, query_img_hist,self.similarity_mode)
             result.append([image, sim_result])
         return result
-
-    def compute_histogram(self, image: np.ndarray, plot=False):
-        """
-        Method to compute the histogram of an image
-        """
-        color_space = {
-            "gray": cv2.COLOR_BGR2GRAY,
-            "rgb": cv2.COLOR_BGR2RGB, 
-            "hsv": cv2.COLOR_BGR2HSV,
-            "lab": cv2.COLOR_BGR2LAB
-        }
-
-        image = cv2.cvtColor(image, color_space[self.color_space])
-        
-        chans = cv2.split(image) 
-        if self.color_space != "hsv":
-            hist = self.compute_standard_histogram(chans)
-        else:
-            hist = self.compute_hsv_histogram(chans)
-
-        #hist = hist.astype(np.uint8)
-        if plot:
-            plt.figure()
-            plt.title("Histogram")
-            plt.xlabel("Bins")
-            plt.ylabel("# of Pixels")
-            for color_hist in np.split(hist, len(chans)):
-                plt.plot(color_hist)
-            plt.xlim([0, 256])
-            plt.show()
-        return hist
 
     def compute_standard_histogram(self, channels: np.ndarray):
         hist_chan = []
@@ -112,15 +81,65 @@ class Museum(object):
         hist = np.concatenate((hist_chan))
         return hist
 
-    def compute_hsv_histogram(self, channels: np.ndarray):
-        # reduce the bins for brightness channel
-        hist_chan = []
-        max_bins = 256
-        for channel, bins, max_val in zip(channels,[int(180/(256/max_bins)), max_bins, int(max_bins/8)],[180,256,256]):
-            hist = cv2.calcHist([channel],[0], None, [bins], [0, max_val])
-            hist = cv2.normalize(hist, hist)
-            hist_chan.append(hist)
-        hist = np.concatenate((hist_chan))
+    def compute_3d_rgb_histogram(self, channels: np.ndarray):
+        """
+            3D color histogram (utilizing all channels) with 8 bins in each direction 
+        """
+
+        hist = cv2.calcHist([channels], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+        hist = cv2.normalize(hist, hist)
+        return hist.flatten()
+
+    def compute_3d_lab_histogram(self, channels:np.ndarray):
+        """
+          Lab definition:
+          L*a*b* breaks the colors down based on human perception and the opponent process of vision. 
+          The channels are perceptual lightness, and a* and b* which encode red/green and blue/yellow respectively, 
+
+          Then, we will focus on the chromatic representation. Bins has been set empirically
+        """
+
+        hist = cv2.calcHist([channels], [0, 1, 2], None, [2, 24, 24], [0, 256, 0, 256, 0, 256])
+        hist = cv2.normalize(hist, hist)
+        return hist.flatten()
+
+    def compute_histogram(self, image: np.ndarray, metric: str, plot=False):
+        """
+        Method to compute the histogram of an image
+        """
+        color_space = {
+            "gray": cv2.COLOR_BGR2GRAY,
+            "rgb": cv2.COLOR_BGR2RGB, 
+            "hsv": cv2.COLOR_BGR2HSV,
+            "lab": cv2.COLOR_BGR2LAB
+        }
+
+        histogram_function = {
+            "gray": self.compute_standard_histogram,
+            "rgb_1d": self.compute_standard_histogram,
+            "rgb_3d": self.compute_3d_rgb_histogram,
+            "hsv": self.compute_standard_histogram,
+            "lab": self.compute_standard_histogram,
+            "lab_3d": self.compute_3d_lab_histogram
+        }
+
+        image = cv2.cvtColor(image, color_space[self.color_space])
+        
+        if not "3d" in metric:
+            image = cv2.split(image)
+
+        hist = histogram_function[metric](image)
+
+        #hist = hist.astype(np.uint8)
+        if plot:
+            plt.figure()
+            plt.title("Histogram")
+            plt.xlabel("Bins")
+            plt.ylabel("# of Pixels")
+            for color_hist in np.split(hist, len(image)):
+                plt.plot(color_hist)
+            plt.xlim([0, 256])
+            plt.show()
         return hist
 
     @staticmethod
