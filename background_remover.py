@@ -19,6 +19,7 @@ class Canvas(object):
         self.simplify_irrelevant #simplyfy_irrelevant
         self.gray2rgb #gray2rgb
         self.save_mask #save_mask
+        self.crop_image #crop_image
 
     def input_image(self,path):
         img = cv.imread(path)
@@ -113,8 +114,12 @@ class Canvas(object):
 
         cx = int(centroids[max_h_index][0])
         cy = int(centroids[max_h_index][1])
+        x = stats[max_h_index][0]
+        y = stats[max_h_index][1]
+        w = stats[max_h_index][2]
+        h = stats[max_h_index][3]
         #print('Centroids: X:',cx,'Y:',cy)
-        return nogaps,cx,cy
+        return nogaps,cx,cy,x,y,w,h
 
     def gray2rgb(self,nogaps):
         #------------ Convert the image
@@ -131,17 +136,28 @@ class Canvas(object):
         cv.imwrite(filename, backtorgb)
         print('Successfully generated and saved',filename)
 
-    def background_remover(self,path,save_path,f):
+    def crop_image(self,img,save_directory_croped,x,y,w,h):
+        croped_img = img[y:y+h, x:x+w]
+        directory = save_directory_croped
+        os.chdir(directory)
+        filename = 'crop_'+f
+        cv.imwrite(filename, croped_img)
+        print('Successfully generated and saved',filename)
+
+
+    def background_remover(self,path,save_path,save_path_croped,f):
         img = self.input_image(path)
         simplifyed_img, histogram, result = self.simplify_irrelevant(img)
         objects_img, mask = self.make_bin_and_objects(simplifyed_img)
-        connected_img,cx,cy = self.connected_componets(objects_img)
+        connected_img,cx,cy,x,y,w,h = self.connected_componets(objects_img)
         final_mask = self.gray2rgb(connected_img)
         self.save_mask(final_mask,mask,img,cx,cy,save_path,f)
+        self.crop_image(img,save_path_croped,x,y,w,h)
 
 valid_images = [".jpg"]
-load_directory = 'C:\\Users\\usuario\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\'
-save_direcory = 'C:\\Users\\usuario\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\generated_masks'
+load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\'
+save_direcory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\generated_masks'
+save_directory_croped = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\croped'
 
 if __name__ == "__main__":
 
@@ -153,4 +169,4 @@ if __name__ == "__main__":
         #print(typex)
         if typex.lower() not in valid_images:
             continue
-        museum.background_remover(load_directory + f,save_direcory,file_name)
+        museum.background_remover(load_directory + f,save_direcory,save_directory_croped ,file_name)
