@@ -158,6 +158,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 ## Contact
 
 Marcelo Sanchez Ortega - marcelosanchezortega@gmail.com
+
 Manel Guzmán Casterllana - manelguz7@gmail.com
 
 
