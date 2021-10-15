@@ -1,4 +1,3 @@
-from typing import final
 import cv2 as cv
 import os
 import numpy as np
@@ -130,18 +129,15 @@ class Canvas(object):
 
     def save_mask(self,backtorgb,mask,img,cx,cy,save_path,f):
         #------------ Save the mask and the image + mask
-        directory = save_path
-        os.chdir(directory)
-        filename = 'mask_'+f+'.png'
-        cv.imwrite(filename, backtorgb)
+        filename = 'mask_' + f
+        cv.imwrite(os.path.join(save_path, filename), backtorgb)
         print('Successfully generated and saved',filename)
 
-    def crop_image(self,img,save_directory_croped,x,y,w,h):
+    def crop_image(self,img,save_directory_croped,x,y,w,h,f):
         croped_img = img[y:y+h, x:x+w]
         directory = save_directory_croped
-        os.chdir(directory)
         filename = 'crop_'+f
-        cv.imwrite(filename, croped_img)
+        cv.imwrite(os.path.join(directory, filename), croped_img)
         print('Successfully generated and saved',filename)
 
 
@@ -152,7 +148,7 @@ class Canvas(object):
         connected_img,cx,cy,x,y,w,h = self.connected_componets(objects_img)
         final_mask = self.gray2rgb(connected_img)
         self.save_mask(final_mask,mask,img,cx,cy,save_path,f)
-        self.crop_image(img,save_path_croped,x,y,w,h)
+        self.crop_image(img,save_path_croped,x,y,w,h,f)
 
 valid_images = [".jpg"]
 load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W1\\QSD2\\'

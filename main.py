@@ -1,21 +1,25 @@
 import argparse
 import os
 import argparse
-
+import shutil
 
 import museum
 import results
 from mapk import mapk
+from background_remover import Canvas
+
+CANVAS_TMP_FOLDER = "canvas_tmp_folder"
+CANVAS_TMP_FOLDER_CROPPED = "canvas_tmp_folder_cropped"
 
 parser_epilog = \
 """
       Example given an image:\n
 
-      python3 main.py "datasets/museum_set" "datasets/qsd1_w1/00002.jpg" "L1_norm"\n
+      python3 main.py "datasets/BBDD" "datasets/qsd1_w1/" "hellinger_similarity" \ --metric lab_3d -k 1
       
       Example given a quey path:\n
       
-      python3 main.py "datasets/museum_set" "datasets/query_set/" "L1_norm"
+      python3 main.py "datasets/BBDD" "datasets/qsd1_w1/" "hellinger_similarity" \  "datasets/qsd1_w1/gt_corresps.pkl" --metric lab_3d -k 1
 """
 
 parser = argparse.ArgumentParser(
@@ -40,6 +44,11 @@ parser.add_argument('similarity',
                        choices=["L1_norm", "L2_norm", "cosine_similarity", "histogram_intersection", "hellinger_similarity"],
                        help='The similaritie measures avaliable to compute the measure')
 
+parser.add_argument('-g', '--ground_truth',
+                       metavar='ground_truth',
+                       type=str,
+                       help='The ground_truth result')
+
 parser.add_argument('-m', '--metric',
                        metavar='metric',
                        type=str,
@@ -47,12 +56,6 @@ parser.add_argument('-m', '--metric',
                        default="gray",
                        help='The color spaces avaliable for the histogram computation')
 
-parser.add_argument('-c', '--color_space',
-                       metavar='color_space',
-                       type=str,
-                       choices=["gray", "rgb", "hsv", "lab"],
-                       default="gray",
-                       help='The color spaces avaliable for the histogram computation')
 
 parser.add_argument('-k', '--number_results',
                        metavar='number_results',
@@ -70,14 +73,31 @@ parser.set_defaults(rm_background=False)
 # Parse arguments
 args = parser.parse_args()
 k = args.number_results
-gt = results.ground_truth("datasets/qsd1_w1/gt_corresps.pkl")
+gt = results.ground_truth(args.ground_truth)
 
-museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=True, similarity_mode=args.similarity, color_space=args.color_space)
+museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=True, similarity_mode=args.similarity, color_space=args.metric.split("_")[0])
+canvas = Canvas()
+
+query_image_path = args.query_image_path
+if args.rm_background:
+    if os.path.isdir(CANVAS_TMP_FOLDER):
+        shutil.rmtree(CANVAS_TMP_FOLDER)
+        shutil.rmtree(CANVAS_TMP_FOLDER_CROPPED)
+    os.mkdir(CANVAS_TMP_FOLDER)
+    os.mkdir(CANVAS_TMP_FOLDER_CROPPED)
+
+    for image in os.listdir(query_image_path):
+        is_img = museum.Museum.file_is_image(os.path.join(query_image_path, image))
+        if is_img:
+            canvas.background_remover(os.path.join(args.query_image_path, image), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER_CROPPED) , image)
+    query_image_path = CANVAS_TMP_FOLDER_CROPPED
+
 final_result = []
-if os.path.isdir(args.query_image_path):
-    for image in sorted(os.listdir(args.query_image_path)):
+if os.path.isdir(query_image_path):
+    gt = results.ground_truth(args.ground_truth)
+    for image in sorted(os.listdir(query_image_path)):
         try:
-            result = museum_similarity_comparator.compute_similarity(os.path.join(args.query_image_path, image), args.metric)
+            result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
         except museum.FileIsNotImageError:
             continue
         result.sort(key=lambda x: x[1]) # resulting score sorted
@@ -88,7 +108,7 @@ if os.path.isdir(args.query_image_path):
     print("Resulting Mapk:")
     print(mapk_result)
 else:
-    result = museum_similarity_comparator.compute_similarity(args.query_image_path, args.metric)
+    result = museum_similarity_comparator.compute_similarity(query_image_path, args.metric)
     result.sort(key=lambda x: x[1]) # resulting score sorted
     result = result[:k]
     final_result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
@@ -98,12 +118,7 @@ print(final_result)
 print("Ground Truth")
 print(gt)
 # For evaluation purposes
-"""
-res = []
-gt = results.ground_truth("datasets/qsd1_w1/gt_corresps.pkl")
-for indx, query in enumerate(final_result):
-    print("query: " + str(query))
-    print("gt: " + str(gt[indx]))
-    res.append(query == gt[indx])
-print(sum(res))
-"""
+
+# python3 main.py "datasets/BBDD" "datasets/qst1_w1/" "L1_norm" -g "datasets/qst1_w1/gt_corresps.pkl" --metric rgb_3d -k 1
+
+#python3 main.py "datasets/BBDD" "datasets/qst2_w1/" "L1_norm" -g "datasets/qst2_w1/gt_corresps.pkl" --metric rgb_3d -k 1 --remove_back
