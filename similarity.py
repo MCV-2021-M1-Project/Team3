@@ -24,7 +24,10 @@ def cosine_similarity(vector_1: np.  uint8, vector_2: np.uint8) -> np.float32:
 
 def histogram_intersection(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
     #return np.sum(np.minimum(vector_1, vector_2))
-    return  np.true_divide(np.sum(np.minimum(vector_1, vector_2)), np.sum(vector_2))
+    #return  np.true_divide(np.sum(np.minimum(vector_1, vector_2)), np.sum(vector_2))    
+    minima = np.minimum(vector_1, vector_2)
+    intersection = np.true_divide(np.sum(minima), np.sum(vector_2))
+    return intersection
 
 
 def hellinger_similarity(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
