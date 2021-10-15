@@ -151,7 +151,7 @@ Marcelo Sanchez Ortega - marcelosanchezortega@gmail.com
 
 Manel Guzmán Casterllana - manelguz7@gmail.com
 
-Jiaqiang Te Zhu - jiaqiang.ye@autonoma.cat
+Jiaqiang Ye Zhu - jiaqiang.ye@autonoma.cat
 
 
 Project Link: [https://github.com/MCV-2021-M1-Project/Team3](https://github.com/MCV-2021-M1-Project/Team3)
