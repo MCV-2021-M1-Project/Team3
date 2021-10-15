@@ -129,7 +129,7 @@ class Canvas(object):
 
     def save_mask(self,backtorgb,mask,img,cx,cy,save_path,f):
         #------------ Save the mask and the image + mask
-        filename = 'mask_' + f
+        filename = 'mask_' + f.split(".")[0] + ".png"
         cv.imwrite(os.path.join(save_path, filename), backtorgb)
         print('Successfully generated and saved',filename)
 
