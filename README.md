@@ -40,18 +40,16 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
+M1-Introduction to human and computer vision project from  the Msc: Master in Computer Vision Master done by the UAB.This repository is maintained mainly by Marcelo Sanchez Ortega,Manel Guzmán Casterllana,Sergi Vidal and Gia.
+
+The main goal is to learn the basic concepts and techniques to build a simple query by example retrieval system for finding paintings in a museum image collection.
+
+## Dataset
+
+All the data can be downloaded from https://drive.google.com/drive/folders/1VikUR33q4RR4md01oJ4TPe2FtqOX6ikh
 
 
-There are many great README templates available on GitHub; however, I didn't find one that really suited my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need -- I think this is it.
 
-Here's why:
-* Your time should be focused on creating something amazing. A project that solves a problem and helps others
-* You shouldn't be doing the same tasks over and over like creating a README from scratch
-* You should implement DRY principles to the rest of your life :smile:
-
-Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue. Thanks to all the people have contributed to expanding this template!
-
-Use the `BLANK_README.md` to get started.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -102,9 +100,9 @@ This is an example of how to list things you need to use the software and how to
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
+ ```
+    python3 main.py --museum_images_path /to/to/dataset/ --query_image_path path/to/query/folder
+   ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -113,18 +111,10 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [x] Add Changelog
-- [x] Add back to top links
-- [] Add Additional Templates w/ Examples
-- [] Add "components" document to easily copy & paste sections of the readme
-- [] Multi-language Support
-    - [] Chinese
-    - [] Spanish
+- [x] First week submission
 
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 <!-- CONTRIBUTING -->
@@ -163,18 +153,6 @@ Manel Guzmán Casterllana - manelguz7@gmail.com
 
 
 Project Link: [https://github.com/MCV-2021-M1-Project/Team3](https://github.com/MCV-2021-M1-Project/Team3)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* [Choose an Open Source License](https://choosealicense.com)
-
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
