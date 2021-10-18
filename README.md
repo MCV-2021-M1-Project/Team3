@@ -100,9 +100,9 @@ This is an example of how to list things you need to use the software and how to
 <!-- USAGE EXAMPLES -->
 ## Usage
 
- ```
-    python3 main.py --museum_images_path /to/to/dataset/ --query_image_path path/to/query/folder
-   ```
+  ```
+    python3 main.py "path/to/dataset" "path/to/query/folder" "metric" -g "dataset/ground_truth" -m "evaluation_metric" -k n_results --remove_back
+  ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
