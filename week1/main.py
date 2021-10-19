@@ -73,7 +73,6 @@ parser.set_defaults(rm_background=False)
 # Parse arguments
 args = parser.parse_args()
 k = args.number_results
-gt = results.ground_truth(args.ground_truth)
 
 museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=True, similarity_mode=args.similarity, color_space=args.metric.split("_")[0])
 canvas = Canvas()
@@ -94,7 +93,6 @@ if args.rm_background:
 
 final_result = []
 if os.path.isdir(query_image_path):
-    gt = results.ground_truth(args.ground_truth)
     for image in sorted(os.listdir(query_image_path)):
         try:
             result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
@@ -104,9 +102,13 @@ if os.path.isdir(query_image_path):
         result = result[:k] # take the k elements
         result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
         final_result.append(result)
-    mapk_result = mapk(gt, final_result, k=k)
-    print("Resulting Mapk:")
-    print(mapk_result)
+        if args.ground_truth is not None:
+            gt = results.ground_truth(args.ground_truth)
+            mapk_result = mapk(gt, final_result, k=k)
+            print("Resulting Mapk:")
+            print(mapk_result)
+            print("Ground Truth")
+            print(gt)
 else:
     result = museum_similarity_comparator.compute_similarity(query_image_path, args.metric)
     result.sort(key=lambda x: x[1]) # resulting score sorted
@@ -115,8 +117,7 @@ else:
 
 print("Final Guess")
 print(final_result)
-print("Ground Truth")
-print(gt)
+
 # For evaluation purposes
 
 # python3 main.py "datasets/BBDD" "datasets/qst1_w1/" "L1_norm" -g "datasets/qst1_w1/gt_corresps.pkl" --metric rgb_3d -k 1
