@@ -3,6 +3,7 @@ from PIL import Image, ImageChops
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
+import shapely.geometry as geom
 from similarity import compute_similarity
 
 VALID_IMAGE_FORMATS = ['JPEG']
@@ -18,11 +19,13 @@ class Museum(object):
     extrat its feature descriptors.
     """
 
-    def __init__(self, data_set_path: str, similarity_mode: str ="L1_norm", color_space:str ="gray", rm_frame:bool = False):
+    def __init__(self, data_set_path: str, similarity_mode: str ="L1_norm", color_space:str ="gray", rm_frame:bool = False,tile_size_x = None, tile_size_y = None):
         self.rm_frame = rm_frame
         self.image_dataset = self.load_images_dataset(data_set_path)
         self.similarity_mode = similarity_mode
         self.color_space = color_space
+        self.tile_size_x = tile_size_x
+        self.tile_size_y = tile_size_y
 
     def load_images_dataset(self, image_path: str, ):
         """
@@ -89,6 +92,46 @@ class Museum(object):
         hist = cv2.calcHist([channels], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
         hist = cv2.normalize(hist, hist)
         return hist.flatten()
+    def compute_3d_tiled_histogram_given_mask(self, channels: np.ndarray,bbox:tuple):
+        """ input_params
+                bbox: tuple containing two tuples, where first tuple is top-left coordinate of the mask
+                and second tuple in left-bottom coordinates e.g ((0,0),(250,250)), if bbox is None, it will
+                compute the histograms for all the tiles            
+        """
+        #if the tile size is not defined at init, we will divide the image in 
+        if self.tile_size_x is None:
+            M = channels.shape[0]//3
+        else:
+            M = self.tile_size_x
+        if self.tile_size_y is None:
+            N = channels.shape[1]//3
+        else:
+            N = self.tile_size_x         
+        for y in range(0,channels.shape[0],M):
+            for x in range(0,channels.shape[1],N):
+                y1 = y + M
+                x1 = x + N
+                tile = channels[y:y+M,x:x+N]
+                #if there is not bbox param, we compute hist for all the tiles
+                if bbox is None:
+                    hist = cv2.calcHist([tile], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])                    
+                    hist = cv2.normalize(hist, hist)
+                    histogram = np.concatenate((histogram,hist.flatten()), axis=0)
+                else:
+                    #create shapely polygon to compute intersection    
+                    p1 = geom.Polygon([(x,y), (x1,y),(x1,y1),(x,y1),(x,y)])
+                    p2 = geom.Polygon([(bbox[0][0],bbox[0][1]), (bbox[1][0],bbox[0][1]),(bbox[1][0],bbox[1][1]),(bbox[0][0],bbox[1][1]),(bbox[0][0],bbox[0][1])])
+                    # if it intersects, we must avoid that tile in the histogram, so we append a vector of 0 equals to histogram size, this is needed bcs if not,
+                    # we will not be able to compare with label image, can not compute similarity of vectors with different sizes.
+                    #ATENTION! intersection is not the same as containing                    
+                    if p1.intersects(p2):                           
+                        histogram = np.concatenate((histogram,np.zeros(8*8*8)), axis=0)                        
+                    else:
+                        hist = cv2.calcHist([tile], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])                    
+                        hist = cv2.normalize(hist, hist)
+                        histogram = np.concatenate((histogram,hist.flatten()), axis=0)
+                         
+        return hist.flatten()    
 
     def compute_3d_lab_histogram(self, channels:np.ndarray):
         """
