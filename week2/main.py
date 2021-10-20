@@ -63,6 +63,12 @@ parser.add_argument('-k', '--number_results',
                        default=1,
                        help='The number of top k elements that best match the given image')
 
+parser.add_argument('-b', '--number_blocks',
+                       metavar='number_blocks',
+                       type=int,
+                       default=3,
+                       help='The number of rows and cols to devide image')
+
 parser.add_argument('--remove_back',
                       dest='rm_background', 
                       action='store_true',
@@ -74,7 +80,7 @@ parser.set_defaults(rm_background=False)
 args = parser.parse_args()
 k = args.number_results
 
-museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=True, similarity_mode=args.similarity, color_space=args.metric.split("_")[0])
+museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=True, similarity_mode=args.similarity, color_space=args.metric.split("_")[0], scales=args.number_blocks)
 canvas = Canvas()
 
 query_image_path = args.query_image_path

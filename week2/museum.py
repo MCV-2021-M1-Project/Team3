@@ -19,13 +19,12 @@ class Museum(object):
     extrat its feature descriptors.
     """
 
-    def __init__(self, data_set_path: str, similarity_mode: str ="L1_norm", color_space:str ="gray", rm_frame:bool = False, n_blocks_x = 3, n_blocks_y = 3):
+    def __init__(self, data_set_path: str, similarity_mode: str ="L1_norm", color_space:str ="gray", rm_frame:bool = False, scales:int = 3):
         self.rm_frame = rm_frame
         self.image_dataset = self.load_images_dataset(data_set_path)
         self.similarity_mode = similarity_mode
         self.color_space = color_space
-        self.n_blocks_x = n_blocks_x
-        self.n_blocks_y = n_blocks_y
+        self.scales = scales
 
         self.color_space_map = {
             "gray": cv2.COLOR_BGR2GRAY,
@@ -127,38 +126,38 @@ class Museum(object):
                 compute the histograms for all the tiles            
         """
         #if the tile size is not defined at init, we will divide the image in 
-        histogram = np.array([])
-        M = channels.shape[0]//self.n_blocks_x
-        N = channels.shape[1]//self.n_blocks_y
-
+        histogram = []
         channels = cv2.cvtColor(channels, self.color_space_map[self.color_space])
 
-        for y in range(0,M * self.n_blocks_x ,M):
-            for x in range(0, M * self.n_blocks_y ,N):
-                y1 = y + M
-                x1 = x + N
-                tile = channels[y:y+M,x:x+N]
-                #if there is not bbox param, we compute hist for all the tiles
-                if bbox is None:
-                    hist = self.histogram_function_map[metric](tile)
-                    histogram = np.concatenate((histogram,hist), axis=0)
-                    #hist = cv2.calcHist([tile], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
-                    #hist = cv2.normalize(hist, hist)
-                    #histogram = np.concatenate((histogram,hist.flatten()), axis=0)
-                else:
-                    #create shapely polygon to compute intersection    
-                    p1 = geom.Polygon([(x,y), (x1,y),(x1,y1),(x,y1),(x,y)])
-                    p2 = geom.Polygon([(bbox[0][0],bbox[0][1]), (bbox[1][0],bbox[0][1]),(bbox[1][0],bbox[1][1]),(bbox[0][0],bbox[1][1]),(bbox[0][0],bbox[0][1])])
-                    # if it intersects, we must avoid that tile in the histogram, so we append a vector of 0 equals to histogram size, this is needed bcs if not,
-                    # we will not be able to compare with label image, can not compute similarity of vectors with different sizes.
-                    #ATENTION! intersection is not the same as containing                    
-                    if p1.intersects(p2):                           
-                        histogram = np.concatenate((histogram,np.zeros(8*8*8)), axis=0)                        
-                    else:
+        for pyramid_lvl in range(self.scales+1):
+            n_blocks = 2 ** pyramid_lvl
+            M = channels.shape[0]//n_blocks
+            N = channels.shape[1]//n_blocks
+            hist_scale = []
+            for y in range(0,M * n_blocks ,M):
+                for x in range(0, N * n_blocks ,N):
+                    y1 = y + M
+                    x1 = x + N
+                    tile = channels[y:y+M,x:x+N]
+                    #if there is not bbox param, we compute hist for all the tiles
+                    if bbox is None:
                         hist = self.histogram_function_map[metric](tile)
-                        histogram = np.concatenate((histogram,hist), axis=0)
-                         
-        return hist.flatten()    
+                        hist_scale.extend(hist)
+                    else:
+                        #create shapely polygon to compute intersection
+                        p1 = geom.Polygon([(x,y), (x1,y),(x1,y1),(x,y1),(x,y)])
+                        p2 = geom.Polygon([(bbox[0][0],bbox[0][1]), (bbox[1][0],bbox[0][1]),(bbox[1][0],bbox[1][1]),(bbox[0][0],bbox[1][1]),(bbox[0][0],bbox[0][1])])
+                        # if it intersects, we must avoid that tile in the histogram, so we append a vector of 0 equals to histogram size, this is needed bcs if not,
+                        # we will not be able to compare with label image, can not compute similarity of vectors with different sizes.
+                        #ATENTION! intersection is not the same as containing
+                        if p1.intersects(p2):
+                            histogram = np.concatenate((histogram,np.zeros(8*8*8)), axis=0)
+                        else:
+                            hist = self.histogram_function_map[metric](tile)
+                            histogram = np.concatenate((histogram,hist))
+            histogram.extend(np.stack(hist_scale).flatten())
+
+        return np.stack(histogram).flatten()
 
     def compute_3d_lab_histogram(self, channels:np.ndarray):
         """
