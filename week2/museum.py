@@ -42,6 +42,11 @@ class Museum(object):
             "lab_3d": self.compute_3d_lab_histogram
         }
 
+        self.bins_per_colorspace = {
+            "rgb_3d": [8,8,8],
+            "lab_3d": [2,24,24]
+        }
+
     def load_images_dataset(self, image_path: str, ):
         """
         Method to load the image from dataset path
@@ -151,13 +156,13 @@ class Museum(object):
                         # we will not be able to compare with label image, can not compute similarity of vectors with different sizes.
                         #ATENTION! intersection is not the same as containing
                         if p1.intersects(p2):
-                            histogram = np.concatenate((histogram,np.zeros(8*8*8)), axis=0)
+                            hist_scale.extend(np.zeros(np.prod(self.bins_per_colorspace[metric])))
                         else:
                             hist = self.histogram_function_map[metric](tile)
-                            histogram = np.concatenate((histogram,hist))
+                            hist_scale.extend(hist)
             histogram.extend(np.stack(hist_scale).flatten())
 
-        return np.stack(histogram).flatten()
+        return np.stack(histogram).flatten() # Join the histograms and flat them in one dimension array
 
     def compute_3d_lab_histogram(self, channels:np.ndarray):
         """
