@@ -19,13 +19,29 @@ class Museum(object):
     extrat its feature descriptors.
     """
 
-    def __init__(self, data_set_path: str, similarity_mode: str ="L1_norm", color_space:str ="gray", rm_frame:bool = False,tile_size_x = None, tile_size_y = None):
+    def __init__(self, data_set_path: str, similarity_mode: str ="L1_norm", color_space:str ="gray", rm_frame:bool = False, n_blocks_x = 3, n_blocks_y = 3):
         self.rm_frame = rm_frame
         self.image_dataset = self.load_images_dataset(data_set_path)
         self.similarity_mode = similarity_mode
         self.color_space = color_space
-        self.tile_size_x = tile_size_x
-        self.tile_size_y = tile_size_y
+        self.n_blocks_x = n_blocks_x
+        self.n_blocks_y = n_blocks_y
+
+        self.color_space_map = {
+            "gray": cv2.COLOR_BGR2GRAY,
+            "rgb": cv2.COLOR_BGR2RGB,
+            "hsv": cv2.COLOR_BGR2HSV,
+            "lab": cv2.COLOR_BGR2LAB
+        }
+
+        self.histogram_function_map = {
+            "gray": self.compute_standard_histogram,
+            "rgb_1d": self.compute_standard_histogram,
+            "rgb_3d": self.compute_3d_rgb_histogram,
+            "hsv": self.compute_standard_histogram,
+            "lab": self.compute_standard_histogram,
+            "lab_3d": self.compute_3d_lab_histogram
+        }
 
     def load_images_dataset(self, image_path: str, ):
         """
@@ -75,6 +91,17 @@ class Museum(object):
             result.append([image, sim_result])
         return result
 
+    def compute_image_multiscale_similarity(self, image_path: str, metric:str ):
+        result = []
+        query_img = self.load_query_img(image_path)
+        print(image_path)
+        query_img_hist = self.compute_3d_tiled_histogram_given_mask(query_img, metric=metric)
+        for image in self.image_dataset.keys():
+            image_hist = self.compute_3d_tiled_histogram_given_mask(self.image_dataset[image]["image_obj"], metric=metric)
+            sim_result = compute_similarity(image_hist, query_img_hist,self.similarity_mode)
+            result.append([image, sim_result])
+        return result
+
     def compute_standard_histogram(self, channels: np.ndarray):
         hist_chan = []
         for channel in channels:
@@ -92,31 +119,32 @@ class Museum(object):
         hist = cv2.calcHist([channels], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
         hist = cv2.normalize(hist, hist)
         return hist.flatten()
-    def compute_3d_tiled_histogram_given_mask(self, channels: np.ndarray,bbox:tuple):
+
+    def compute_3d_tiled_histogram_given_mask(self, channels: np.ndarray, metric:str, bbox:tuple = None):
         """ input_params
                 bbox: tuple containing two tuples, where first tuple is top-left coordinate of the mask
                 and second tuple in left-bottom coordinates e.g ((0,0),(250,250)), if bbox is None, it will
                 compute the histograms for all the tiles            
         """
         #if the tile size is not defined at init, we will divide the image in 
-        if self.tile_size_x is None:
-            M = channels.shape[0]//3
-        else:
-            M = self.tile_size_x
-        if self.tile_size_y is None:
-            N = channels.shape[1]//3
-        else:
-            N = self.tile_size_x         
-        for y in range(0,channels.shape[0],M):
-            for x in range(0,channels.shape[1],N):
+        histogram = np.array([])
+        M = channels.shape[0]//self.n_blocks_x
+        N = channels.shape[1]//self.n_blocks_y
+
+        channels = cv2.cvtColor(channels, self.color_space_map[self.color_space])
+
+        for y in range(0,M * self.n_blocks_x ,M):
+            for x in range(0, M * self.n_blocks_y ,N):
                 y1 = y + M
                 x1 = x + N
                 tile = channels[y:y+M,x:x+N]
                 #if there is not bbox param, we compute hist for all the tiles
                 if bbox is None:
-                    hist = cv2.calcHist([tile], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])                    
-                    hist = cv2.normalize(hist, hist)
-                    histogram = np.concatenate((histogram,hist.flatten()), axis=0)
+                    hist = self.histogram_function_map[metric](tile)
+                    histogram = np.concatenate((histogram,hist), axis=0)
+                    #hist = cv2.calcHist([tile], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+                    #hist = cv2.normalize(hist, hist)
+                    #histogram = np.concatenate((histogram,hist.flatten()), axis=0)
                 else:
                     #create shapely polygon to compute intersection    
                     p1 = geom.Polygon([(x,y), (x1,y),(x1,y1),(x,y1),(x,y)])
@@ -127,9 +155,8 @@ class Museum(object):
                     if p1.intersects(p2):                           
                         histogram = np.concatenate((histogram,np.zeros(8*8*8)), axis=0)                        
                     else:
-                        hist = cv2.calcHist([tile], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])                    
-                        hist = cv2.normalize(hist, hist)
-                        histogram = np.concatenate((histogram,hist.flatten()), axis=0)
+                        hist = self.histogram_function_map[metric](tile)
+                        histogram = np.concatenate((histogram,hist), axis=0)
                          
         return hist.flatten()    
 
@@ -150,28 +177,13 @@ class Museum(object):
         """
         Method to compute the histogram of an image
         """
-        color_space = {
-            "gray": cv2.COLOR_BGR2GRAY,
-            "rgb": cv2.COLOR_BGR2RGB, 
-            "hsv": cv2.COLOR_BGR2HSV,
-            "lab": cv2.COLOR_BGR2LAB
-        }
 
-        histogram_function = {
-            "gray": self.compute_standard_histogram,
-            "rgb_1d": self.compute_standard_histogram,
-            "rgb_3d": self.compute_3d_rgb_histogram,
-            "hsv": self.compute_standard_histogram,
-            "lab": self.compute_standard_histogram,
-            "lab_3d": self.compute_3d_lab_histogram
-        }
-
-        image = cv2.cvtColor(image, color_space[self.color_space])
+        image = cv2.cvtColor(image, self.color_space_map[self.color_space])
         
         if not "3d" in metric:
             image = cv2.split(image)
 
-        hist = histogram_function[metric](image)
+        hist = self.histogram_function_map[metric](image)
 
         #hist = hist.astype(np.uint8)
         if plot:

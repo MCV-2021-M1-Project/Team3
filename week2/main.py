@@ -95,22 +95,28 @@ final_result = []
 if os.path.isdir(query_image_path):
     for image in sorted(os.listdir(query_image_path)):
         try:
-            result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
+            # working multiscale
+            result = museum_similarity_comparator.compute_image_multiscale_similarity(os.path.join(query_image_path, image), args.metric)
+            # working at given image size
+            #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
         except museum.FileIsNotImageError:
             continue
         result.sort(key=lambda x: x[1]) # resulting score sorted
         result = result[:k] # take the k elements
         result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
         final_result.append(result)
-        if args.ground_truth is not None:
-            gt = results.ground_truth(args.ground_truth)
-            mapk_result = mapk(gt, final_result, k=k)
-            print("Resulting Mapk:")
-            print(mapk_result)
-            print("Ground Truth")
-            print(gt)
+    if args.ground_truth is not None:
+        gt = results.ground_truth(args.ground_truth)
+        mapk_result = mapk(gt, final_result, k=k)
+        print("Resulting Mapk:")
+        print(mapk_result)
+        print("Ground Truth")
+        print(gt)
 else:
-    result = museum_similarity_comparator.compute_similarity(query_image_path, args.metric)
+    # working multiscale
+    result = museum_similarity_comparator.compute_image_multiscale_similarity(query_image_path, args.metric)
+    # working at given image size
+    #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
     result.sort(key=lambda x: x[1]) # resulting score sorted
     result = result[:k]
     final_result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
