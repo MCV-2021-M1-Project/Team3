@@ -7,6 +7,7 @@ import museum
 import results
 from mapk import mapk
 from background_remover import Canvas
+from text_extraction import Text
 
 CANVAS_TMP_FOLDER = "canvas_tmp_folder"
 CANVAS_TMP_FOLDER_CROPPED = "canvas_tmp_folder_cropped"
@@ -82,6 +83,7 @@ k = args.number_results
 
 museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=True, similarity_mode=args.similarity, color_space=args.metric.split("_")[0], scales=args.number_blocks)
 canvas = Canvas()
+text_extractor = Text()
 
 query_image_path = args.query_image_path
 if args.rm_background:
@@ -102,7 +104,7 @@ if os.path.isdir(query_image_path):
     for image in sorted(os.listdir(query_image_path)):
         try:
             # working multiscale
-            result = museum_similarity_comparator.compute_image_multiscale_similarity(os.path.join(query_image_path, image), args.metric)
+            result = museum_similarity_comparator.compute_image_multiscale_similarity(os.path.join(query_image_path, image), args.metric, text_extractor.text_extraction)
             # working at given image size
             #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
         except museum.FileIsNotImageError:

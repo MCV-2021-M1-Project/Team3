@@ -18,7 +18,10 @@ class Text(object):
         #self.crop_image #crop_image
 
     def input_image(self,path):
-        img = cv2.imread(path)
+        if type(path) is str:
+            img = cv2.imread(path)
+        else:
+            img = path
         return img
 
     def gray2rgb(self,nogaps):

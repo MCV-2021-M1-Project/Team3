@@ -95,13 +95,15 @@ class Museum(object):
             result.append([image, sim_result])
         return result
 
-    def compute_image_multiscale_similarity(self, image_path: str, metric:str ):
+    def compute_image_multiscale_similarity(self, image_path: str, metric:str , text_extractor_method: callable):
         result = []
         query_img = self.load_query_img(image_path)
         print(image_path)
-        query_img_hist = self.compute_3d_tiled_histogram_given_mask(query_img, metric=metric)
+        bbox_query ,  _= text_extractor_method(image_path,None,None)
+        query_img_hist = self.compute_3d_tiled_histogram_given_mask(query_img, metric, bbox_query)
         for image in self.image_dataset.keys():
-            image_hist = self.compute_3d_tiled_histogram_given_mask(self.image_dataset[image]["image_obj"], metric=metric)
+            bbox_dataset ,  _= text_extractor_method(self.image_dataset[image]["image_obj"],None,None)
+            image_hist = self.compute_3d_tiled_histogram_given_mask(self.image_dataset[image]["image_obj"], metric, bbox_dataset)
             sim_result = compute_similarity(image_hist, query_img_hist,self.similarity_mode)
             result.append([image, sim_result])
         return result
@@ -133,7 +135,7 @@ class Museum(object):
         #if the tile size is not defined at init, we will divide the image in 
         histogram = []
         channels = cv2.cvtColor(channels, self.color_space_map[self.color_space])
-
+        bbox = [[bbox[0], bbox[1]], [bbox[2], bbox[3]]]
         for pyramid_lvl in range(self.scales+1):
             n_blocks = 2 ** pyramid_lvl
             M = channels.shape[0]//n_blocks

@@ -217,7 +217,7 @@ class Canvas(object):
         #------------ Save the mask and the image + mask
         #directory = save_path
         #os.chdir(directory)
-        filename = 'mask_'+f+'.png'
+        filename = 'mask_'+os.path.splitext(f)[0]+'.png'
         file_path = os.path.join(save_path, filename)
         cv.imwrite(file_path, backtorgb)
         print('Successfully generated and saved',filename)
