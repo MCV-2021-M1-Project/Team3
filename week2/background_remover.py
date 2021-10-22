@@ -129,7 +129,8 @@ class Canvas(object):
         w2 = -1
         h2 = -1
         output = cv.connectedComponentsWithStats(
-            nogaps, 4, cv.CV_32S)
+            nogaps, 4, cv.CV_32S
+        )
         (numLabels, labels, stats, centroids) = output
         h_tot = []
         for f in range(1,numLabels):
@@ -156,7 +157,6 @@ class Canvas(object):
         backtorgb_mid = cv.cvtColor(nogaps,cv.COLOR_GRAY2RGB)
         #print('Numbers of Components: ',numLabels-1)
         for f in range(1,numLabels):
-            
             x = stats[f][0]
             y = stats[f][1]
             w = stats[f][2]
@@ -215,27 +215,32 @@ class Canvas(object):
 
     def save_mask(self,backtorgb,mask,img,cx,cy,save_path,f):
         #------------ Save the mask and the image + mask
-        directory = save_path
-        os.chdir(directory)
+        #directory = save_path
+        #os.chdir(directory)
         filename = 'mask_'+f+'.png'
-        cv.imwrite(filename, backtorgb)
+        file_path = os.path.join(save_path, filename)
+        cv.imwrite(file_path, backtorgb)
         print('Successfully generated and saved',filename)
 
     def crop_image(self,img,save_directory_croped,x,y,w,h,x2,y2,w2,h2,f):
         file_name = os.path.splitext(f)[0]
         #print('FILE NAME:',file_name)
         croped_img = img[y:y+h, x:x+w]
-        directory = save_directory_croped
-        os.chdir(directory)
+        #directory = save_directory_croped
+        #os.chdir(directory)
         filename = 'crop_'+file_name+'.jpg'
-        cv.imwrite(filename, croped_img)
+        file_path = os.path.join(save_directory_croped, filename)
+        cv.imwrite(file_path, croped_img)
+        #cv.imwrite(filename, croped_img)
         print('Successfully generated and saved',filename)
         if x2 > 0:
             croped_img = img[y2:y2+h2, x2:x2+w2]
-            directory = save_directory_croped
-            os.chdir(directory)
+            #directory = save_directory_croped
+            #os.chdir(directory)
             filename = 'crop_'+file_name+'_2'+'.jpg'
-            cv.imwrite(filename, croped_img)
+            file_path = os.path.join(save_directory_croped, filename)
+            cv.imwrite(file_path, croped_img)
+            #cv.imwrite(filename, croped_img)
             #print('Successfully generated and saved',filename)
 
 
@@ -253,7 +258,9 @@ valid_images = [".jpg"]
 load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\'
 save_direcory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\generated_masks'
 save_directory_croped = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\croped'
-
+load_directory = "datasets/qsd2_w2/"
+save_direcory = 'datasets/qsd2_w2/generated_masks'
+save_directory_croped = 'datasets/qsd2_w2/croped'
 if __name__ == "__main__":
 
     museum = Canvas()
