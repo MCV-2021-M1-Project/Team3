@@ -135,34 +135,25 @@ class Text(object):
 
     def text_extraction(self,path,save_path,f):
         img = self.input_image(path)
-        #plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-        #plt.show()
         sum2 = self.pre_process(img)
-        #plt.imshow(sum2)
-        #plt.show()
         (T, threshInv) = cv2.threshold(sum2, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-        #plt.imshow(cv2.cvtColor(threshInv, cv2.COLOR_BGR2RGB))
-        #plt.show()
         bbox = self.search_elements(img,threshInv)
         backtorgb = self.gray2rgb(threshInv)
-        #plt.imshow(cv2.cvtColor(backtorgb, cv2.COLOR_BGR2RGB))
-        #plt.show()
         mask = self.generate_mask(img,bbox)
-        #plt.imshow(cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY))
-        #plt.show()
         backtorgb = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-        #plt.imshow(backtorgb)
-        #plt.show()
-        self.save_mask(backtorgb,save_path,f)
-        #bbox:
+        if save_path is not None:
+            self.save_mask(backtorgb,save_path,f)
+
         bbox[2],bbox[3] = bbox[0]+bbox[2],bbox[1]+bbox[3]
         print('BBOX: ',bbox)
-        #print('---------------------------------------------------------')
+        print('---------------------------------------------------------')
         return bbox,mask
 
 valid_images = [".jpg"]
 path = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\croped'
 save_path = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\generated_text_masks'
+path = "datasets/qsd1_w2/"
+save_path = "datasets/qsd1_w2/generated_text_masks"
 if __name__ == "__main__":
 
     text_id = Text()
@@ -173,6 +164,7 @@ if __name__ == "__main__":
         ##print(typex)
         if typex.lower() not in valid_images:
             continue
-        path_in = path + '\\' + f
+        #path_in = path + '\\' + f
+        path_in = os.path.join(path, f)
         #print(path_in)
         text_id.text_extraction(path_in,save_path,file_name)
