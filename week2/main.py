@@ -87,6 +87,8 @@ text_extractor = Text()
 
 query_image_path = args.query_image_path
 if args.rm_background:
+    CANVAS_TMP_FOLDER = os.path.join(args.query_image_path,CANVAS_TMP_FOLDER)
+    CANVAS_TMP_FOLDER_CROPPED = os.path.join(args.query_image_path,CANVAS_TMP_FOLDER_CROPPED)
     if os.path.isdir(CANVAS_TMP_FOLDER):
         shutil.rmtree(CANVAS_TMP_FOLDER)
         shutil.rmtree(CANVAS_TMP_FOLDER_CROPPED)

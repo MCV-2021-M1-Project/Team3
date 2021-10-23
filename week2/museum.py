@@ -99,11 +99,10 @@ class Museum(object):
         result = []
         query_img = self.load_query_img(image_path)
         print(image_path)
-        bbox_query ,  _= text_extractor_method(image_path,None,None)
+        bbox_query ,  _= text_extractor_method(query_img,None,None)
         query_img_hist = self.compute_3d_tiled_histogram_given_mask(query_img, metric, bbox_query)
         for image in self.image_dataset.keys():
-            bbox_dataset ,  _= text_extractor_method(self.image_dataset[image]["image_obj"],None,None)
-            image_hist = self.compute_3d_tiled_histogram_given_mask(self.image_dataset[image]["image_obj"], metric, bbox_dataset)
+            image_hist = self.compute_3d_tiled_histogram_given_mask(self.image_dataset[image]["image_obj"], metric)
             sim_result = compute_similarity(image_hist, query_img_hist,self.similarity_mode)
             result.append([image, sim_result])
         return result
@@ -135,7 +134,12 @@ class Museum(object):
         #if the tile size is not defined at init, we will divide the image in 
         histogram = []
         channels = cv2.cvtColor(channels, self.color_space_map[self.color_space])
-        bbox = [[bbox[0], bbox[1]], [bbox[2], bbox[3]]]
+
+        if bbox is not None:
+            # substitute the bounding box with the image mean 
+            #cv2.imwrite("before.png", channels)
+            channels[bbox[1]:bbox[3],bbox[0]:bbox[2]] = channels.mean(axis=(0,1))
+            #cv2.imwrite("after_fliped.png", channels)
         for pyramid_lvl in range(self.scales+1):
             n_blocks = 2 ** pyramid_lvl
             M = channels.shape[0]//n_blocks
@@ -143,13 +147,14 @@ class Museum(object):
             hist_scale = []
             for y in range(0,M * n_blocks ,M):
                 for x in range(0, N * n_blocks ,N):
-                    y1 = y + M
-                    x1 = x + N
+                    #y1 = y + M
+                    #x1 = x + N
                     tile = channels[y:y+M,x:x+N]
                     #if there is not bbox param, we compute hist for all the tiles
-                    if bbox is None:
-                        hist = self.histogram_function_map[metric](tile)
-                        hist_scale.extend(hist)
+                    #if bbox is None:
+                    hist = self.histogram_function_map[metric](tile)
+                    hist_scale.extend(hist)
+                    """   
                     else:
                         #create shapely polygon to compute intersection
                         p1 = geom.Polygon([(x,y), (x1,y),(x1,y1),(x,y1),(x,y)])
@@ -157,11 +162,12 @@ class Museum(object):
                         # if it intersects, we must avoid that tile in the histogram, so we append a vector of 0 equals to histogram size, this is needed bcs if not,
                         # we will not be able to compare with label image, can not compute similarity of vectors with different sizes.
                         #ATENTION! intersection is not the same as containing
-                        if p1.intersects(p2):
+                        if p1.intersects(p2) and pyramid_lvl >= 3:
                             hist_scale.extend(np.zeros(np.prod(self.bins_per_colorspace[metric])))
                         else:
                             hist = self.histogram_function_map[metric](tile)
                             hist_scale.extend(hist)
+                    """
             histogram.extend(np.stack(hist_scale).flatten())
 
         return np.stack(histogram).flatten() # Join the histograms and flat them in one dimension array
