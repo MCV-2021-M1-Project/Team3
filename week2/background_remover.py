@@ -3,6 +3,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.lib.histograms import histogram
+import results
 
 #Techniques like Wathershed, Canny, etc... Are considered "illegal"
 
@@ -264,11 +265,12 @@ save_directory_croped = 'datasets/qsd2_w2/croped'
 if __name__ == "__main__":
 
     museum = Canvas()
-    for f in os.listdir(load_directory):
+    for f in os.listdir(load_directory):        
         ##print(f)
         file_name = typex = os.path.splitext(f)[0]
         typex = os.path.splitext(f)[1]
         ##print(typex)
         if typex.lower() not in valid_images:
             continue
-        museum.background_remover(load_directory + f,save_direcory,save_directory_croped ,file_name)
+        _,x,y,w,h,x2,y2,w2,h2 = museum.background_remover(load_directory + f,save_direcory,save_directory_croped ,file_name)
+        print(_,x,y,w,h,x2,y2,w2,h2)
