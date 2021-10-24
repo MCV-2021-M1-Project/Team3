@@ -87,8 +87,8 @@ text_extractor = Text()
 
 query_image_path = args.query_image_path
 if args.rm_background:
-    CANVAS_TMP_FOLDER = os.path.join(args.query_image_path,CANVAS_TMP_FOLDER)
-    CANVAS_TMP_FOLDER_CROPPED = os.path.join(args.query_image_path,CANVAS_TMP_FOLDER_CROPPED)
+    CANVAS_TMP_FOLDER = os.path.join(query_image_path,CANVAS_TMP_FOLDER)
+    CANVAS_TMP_FOLDER_CROPPED = os.path.join(query_image_path,CANVAS_TMP_FOLDER_CROPPED)
     if os.path.isdir(CANVAS_TMP_FOLDER):
         shutil.rmtree(CANVAS_TMP_FOLDER)
         shutil.rmtree(CANVAS_TMP_FOLDER_CROPPED)
@@ -98,12 +98,12 @@ if args.rm_background:
     for image in os.listdir(query_image_path):
         is_img = museum.Museum.file_is_image(os.path.join(query_image_path, image))
         if is_img:
-            _,x,y,w,h,x2,y2,w2,h2 = canvas.background_remover(os.path.join(args.query_image_path, image), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER_CROPPED) , image)
+            _,x,y,w,h,x2,y2,w2,h2 = canvas.background_remover(os.path.join(query_image_path, image), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER_CROPPED) , image)
             temp_list = [(x,y),(x+w,y+h)]
             if x > 0:
                 temp_list.append([(x2,y2),(x2+w2,y2+h2)])
             list_of_coords.append(temp_list)
-    results.create_results(list_of_coords, file_path="datasets/qsd2_w2/coordinates_mask_original_image.pkl")
+    results.create_results(list_of_coords, file_path=os.path.join(query_image_path,"coordinates_mask_original_image.pkl"))
     query_image_path = CANVAS_TMP_FOLDER_CROPPED
 
 final_result = []
@@ -138,6 +138,7 @@ else:
 
 print("Final Guess")
 print(final_result)
+results.create_results(final_result)
 
 # For evaluation purposes
 
