@@ -129,6 +129,8 @@ class Canvas(object):
         y2 = -1
         w2 = -1
         h2 = -1
+        MIN_AREA_IMG_RATIO = 1/12
+        max_h_index2 = None
         output = cv.connectedComponentsWithStats(
             nogaps, 4, cv.CV_32S
         )
@@ -182,10 +184,14 @@ class Canvas(object):
                 y = stats[f][1]
                 w = stats[f][2]
                 h = stats[f][3]
-                #------------------------------ White
-                cv.rectangle(nogaps, (x, y), (x + w, y + h), (255, 255, 255), -1)
-                #------------------------------ White
-                #print(f,'SALTA')
+                if (w * h)/ (nogaps.shape[0] * nogaps.shape[1]) > MIN_AREA_IMG_RATIO:
+                    print("primer cuadro")
+                    print(x, w, h,y)
+                    print(nogaps.shape[0], nogaps.shape[1])
+                    #------------------------------ White
+                    cv.rectangle(nogaps, (x, y), (x + w, y + h), (255, 255, 255), -1)
+                    #------------------------------ White
+                    #print(f,'SALTA')
                 continue
             
             if max_h_index2 is not None:
@@ -194,17 +200,43 @@ class Canvas(object):
                     y2 = stats[f][1]
                     w2 = stats[f][2]
                     h2 = stats[f][3]
-                    #print('DADWSDAW',x2,y2)
-                    #------------------------------ White
-                    cv.rectangle(nogaps, (x2, y2), (x2 + w2, y2 + h2), (255, 255, 255), -1)
-                    #------------------------------ White
-                    #print(f,'SALTA')
-                    continue
-
+                    if (w2 * h2)/ (nogaps.shape[0] * nogaps.shape[1]) > MIN_AREA_IMG_RATIO:
+                        print("segundo cuadro")
+                        print(x2, w2, h2,y2)
+                        print(nogaps.shape[0], nogaps.shape[1])
+                        #print('DADWSDAW',x2,y2)
+                        #------------------------------ White
+                        cv.rectangle(nogaps, (x2, y2), (x2 + w2, y2 + h2), (255, 255, 255), -1)
+                        #------------------------------ White
+                        #print(f,'SALTA1')
+                continue
+        
+        if max_h_index2 is not None:
+            if (w2 * h2)/ (nogaps.shape[0] * nogaps.shape[1]) > MIN_AREA_IMG_RATIO:
+                if x2 < x:
+                    tempx2 = x2
+                    tempy2 = y2
+                    tempw2 = w2
+                    temph2 = h2
+                    x2 = x
+                    y2 = y
+                    w2 = w
+                    h2 = h 
+                    x = tempx2
+                    y = tempy2
+                    w = tempw2
+                    h = temph2
+            else:
+                x2 = -1
+                y2 = -1
+                w2 = -1
+                h2 = -1
         cx = int(centroids[max_h_index][0])
         cy = int(centroids[max_h_index][1])
         #print('Centroids: X:',cx,'Y:',cy)
         #plt.imshow(cv.cvtColor(backtorgb_mid, cv.COLOR_BGR2RGB))
+        #if x2 < x and max_h_index2 is not None:
+        #    return nogaps,cx,cy,x2,y2,w2,h2,x,y,w,h
         return nogaps,cx,cy,x,y,w,h,x2,y2,w2,h2
 
     def gray2rgb(self,nogaps):
@@ -218,7 +250,7 @@ class Canvas(object):
         #------------ Save the mask and the image + mask
         #directory = save_path
         #os.chdir(directory)
-        filename = 'mask_'+os.path.splitext(f)[0]+'.png'
+        filename = os.path.splitext(f)[0]+'.png'
         file_path = os.path.join(save_path, filename)
         cv.imwrite(file_path, backtorgb)
         print('Successfully generated and saved',filename)
