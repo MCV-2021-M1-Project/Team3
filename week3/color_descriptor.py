@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 class ColorDescriptor(object):
 
-    def __init__(self, , color_space:str ="gray", scales:int = 3) -> None:
+    def __init__(self, color_space:str ="gray", scales:int = 3) -> None:
         self.color_space_map = {
             "gray": cv2.COLOR_BGR2GRAY,
             "rgb": cv2.COLOR_BGR2RGB,
