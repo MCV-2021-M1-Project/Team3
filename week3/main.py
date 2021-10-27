@@ -115,7 +115,10 @@ if os.path.isdir(query_image_path):
     for image in sorted(os.listdir(query_image_path)):
         try:
             # working multiscale
-            result = museum_similarity_comparator.compute_image_similarity(os.path.join(query_image_path, image), args.metric, text_extractor_method=text_extractor.text_extraction)
+            result = museum_similarity_comparator.compute_similarity(
+                os.path.join(query_image_path, image), args.metric, 
+                text_extractor_method=text_extractor.text_extraction
+            )
             # working at given image size
             #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
         except museum.FileIsNotImageError:
@@ -133,7 +136,10 @@ if os.path.isdir(query_image_path):
         print(gt)
 else:
     # working multiscale
-    result = museum_similarity_comparator.compute_image_similarity(query_image_path, args.metric)
+    result = museum_similarity_comparator.compute_image_similarity(
+        query_image_path, args.metric, 
+        text_extractor_method=text_extractor.text_extraction
+    )
     # working at given image size
     #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
     result.sort(key=lambda x: x[1]) # resulting score sorted
