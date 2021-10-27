@@ -65,15 +65,20 @@ class Museum(object):
                     query_img = self.load_query_img(os.path.join(image_set,image)) 
                     set_result.append(
                         self.descriptor.compute_image_similarity(
-                            self.image_dataset, self.similarity_mode, 
+                            self.image_dataset, self.similarity_mode,
                             query_img, metric, text_extractor_method
                         )
                     )
+                    print(set_result)
                 except FileIsNotImageError:
                     pass
         else:
             query_img = self.load_query_img(image_set) 
-            set_result = self.descriptor.compute_image_similarity(query_img, metric=metric)
+            set_result = self.descriptor.compute_image_similarity(
+                self.image_dataset, self.similarity_mode, 
+                query_img, metric, text_extractor_method
+            )
+            print(set_result)
         return set_result
 
 

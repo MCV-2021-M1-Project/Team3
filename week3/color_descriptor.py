@@ -57,6 +57,7 @@ class ColorDescriptor(object):
         hist = cv2.normalize(hist, hist)
         return hist.flatten()
 
+    @staticmethod
     def compute_hist_mask(image, bbox):
         if bbox is None:
             return np.ones(image.shape[:2]).astype(np.uint8)
@@ -126,14 +127,15 @@ class ColorDescriptor(object):
         return hist
     
     def compute_image_similarity(self, dataset, similarity_mode, query_img, metric, text_extractor_method):
-        self.compute_image_multiscale_similarity(dataset, similarity_mode, query_img, metric , text_extractor_method)
+        result = self.compute_image_multiscale_similarity(dataset, similarity_mode, query_img, metric , text_extractor_method)
+        return result
 
-    def compute_simple_image_similarity(self, query_img, metric:str ):
+    def compute_simple_image_similarity(self, dataset, similarity_mode, query_img, metric:str ):
         result = []
         query_img_hist = self.compute_histogram(query_img, metric=metric)
-        for image in self.image_dataset.keys():
-            image_hist = self.compute_histogram(self.image_dataset[image]["image_obj"], metric=metric)
-            sim_result = compute_similarity_measure(image_hist, query_img_hist,self.similarity_mode)
+        for image in dataset.keys():
+            image_hist = self.compute_histogram(dataset[image]["image_obj"], metric=metric)
+            sim_result = compute_similarity_measure(image_hist, query_img_hist,similarity_mode)
             result.append([image, sim_result])
         return result
 

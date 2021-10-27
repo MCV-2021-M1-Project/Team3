@@ -115,6 +115,7 @@ if os.path.isdir(query_image_path):
     for image in sorted(os.listdir(query_image_path)):
         try:
             # working multiscale
+            print(os.path.join(query_image_path, image))
             result = museum_similarity_comparator.compute_similarity(
                 os.path.join(query_image_path, image), args.metric, 
                 text_extractor_method=text_extractor.text_extraction
@@ -136,7 +137,7 @@ if os.path.isdir(query_image_path):
         print(gt)
 else:
     # working multiscale
-    result = museum_similarity_comparator.compute_image_similarity(
+    result = museum_similarity_comparator.compute_similarity(
         query_image_path, args.metric, 
         text_extractor_method=text_extractor.text_extraction
     )
