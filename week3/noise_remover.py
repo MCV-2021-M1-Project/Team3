@@ -38,6 +38,19 @@ class NoiseRemover(object):
     def is_noisy_img(self, img):
         sigma = self.estimate_noise(img)
         return sigma >= self.noise_thresh
+    
+    def median_filter(self, img, kernel):
+      result_img = cv2.bilateralFilter(img, kernel,51,51)
+      return result_img
+
+    def remove_noise(self, img, filter_type, kernel_size):
+      noise_filter = {
+        "bilateral": self.median_filter,
+        "median": cv2.medianBlur,
+      }
+      result_img = noise_filter[filter_type](img, kernel_size)
+      return result_img
+    
 
 if __name__ == "__main__":
     noiser_remover = NoiseRemover(noise_thresh=10)
@@ -45,5 +58,8 @@ if __name__ == "__main__":
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
     is_noisy = noiser_remover.is_noisy_img(img_gray)
     print(is_noisy)
+    if is_noisy:
+        denoised_img = noiser_remover.remove_noise(img, "median", 3)
+    cv2.imwrite("datasets/qsd1_w3/00001_filter.jpg", denoised_img)
     #image = cv2.imread(args["image"])
     #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
