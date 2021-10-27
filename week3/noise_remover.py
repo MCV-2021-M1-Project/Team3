@@ -8,7 +8,7 @@ from scipy.signal import convolve2d
 class NoiseRemover(object):
 
 
-    def __init__(self, noise_thresh) -> None:
+    def __init__(self, noise_thresh=10) -> None:
         self.noise_thresh = noise_thresh 
 
     def estimate_noise(self, img):
