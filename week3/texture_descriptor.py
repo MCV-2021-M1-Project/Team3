@@ -122,8 +122,7 @@ class TextureDescriptor(object):
                     # if there is not bbox param, we compute hist for all the tiles
                     # if bbox is None:
                     if bbox is not None:
-                        hist = self.descriptor_type[self.descriptor](
-                            tile, mask)
+                        hist = self.descriptor_type[self.descriptor](tile, mask)
                     else:
                         hist = self.descriptor_type[self.descriptor](tile)
                     hist_scale.extend(hist)
@@ -143,8 +142,8 @@ class TextureDescriptor(object):
             query_img_hist = self.compute_descriptor(query_img, bbox_query)
         else:
             query_img_hist = self.compute_descriptor(query_img)
-        for image in image_dataset.values():
-            image_hist = self.compute_descriptor(image)
+        for image in image_dataset.keys():
+            image_hist = self.compute_descriptor(image_dataset[image]["image_obj"])
             sim_result = compute_similarity(
                 image_hist, query_img_hist, similarity_mode)
             result.append([image, sim_result])
@@ -158,6 +157,11 @@ if __name__ == "__main__":
     query_image = cv2.imread(
         '/home/marcelo/Documents/Master_CV/M1/Team3/datasets/BBDD/bbdd_00000.jpg')
     descriptor = TextureDescriptor()
-    image_dataset = {1: query_image}
+    image_dataset = {}
+    image_dataset[1] = {
+        "image_name": "1",
+        "image_obj": img
+    }
     descriptor.compute_image_similarity(
-        image_dataset, 'cosine_similairty', img, None)
+        image_dataset, 'cosine_similairty', img, None
+    )
