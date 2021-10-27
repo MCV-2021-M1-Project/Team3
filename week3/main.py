@@ -78,13 +78,20 @@ parser.add_argument('--remove_back',
                       )
 parser.set_defaults(rm_background=False)
 
+parser.add_argument('--rm_noise',
+                      dest='rm_noise', 
+                      action='store_true',
+                      help='Remove the noise from images'
+                      )
+parser.set_defaults(rm_noise=False)
+
 # Parse arguments
 args = parser.parse_args()
 k = args.number_results
 
 descriptor = ColorDescriptor(color_space=args.metric.split("_")[0], scales=args.number_blocks)
 museum_similarity_comparator = museum.Museum(
-    args.museum_images_path, descriptor, rm_frame=True, similarity_mode=args.similarity
+    args.museum_images_path, descriptor, similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
 )
 canvas = Canvas()
 text_extractor = Text()

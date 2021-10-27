@@ -4,6 +4,7 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 from color_descriptor import ColorDescriptor
+from noise_remover import NoiseRemover
 VALID_IMAGE_FORMATS = ['JPEG']
 
 
@@ -17,7 +18,7 @@ class Museum(object):
     extrat its feature descriptors.
     """
 
-    def __init__(self, data_set_path: str, descriptor:callable, similarity_mode: str ="L1_norm", rm_frame:bool = False):
+    def __init__(self, data_set_path: str, descriptor:callable, similarity_mode: str ="L1_norm", rm_frame:bool = False, rm_noise:bool = False ):
         """[summary]
 
         Args:
@@ -30,6 +31,8 @@ class Museum(object):
         self.image_dataset = self.load_images_dataset(data_set_path)
         self.similarity_mode = similarity_mode
         self.descriptor = descriptor
+        self.rm_noise = rm_noise
+        self.noise_remover = NoiseRemover()
 
     def load_images_dataset(self, image_path: str, ):
         """
@@ -62,7 +65,12 @@ class Museum(object):
         if os.path.isdir(image_set):
             for image in os.listdir(image_set):
                 try:
-                    query_img = self.load_query_img(os.path.join(image_set,image)) 
+                    query_img = self.load_query_img(os.path.join(image_set,image))
+                    if self.rm_noise:
+                        img_gray = cv2.cvtColor(query_img, cv2.COLOR_BGR2GRAY) 
+                        if  self.noise_remover.is_noisy_img(img_gray):
+                            denoised_img = self.noise_remover.remove_noise(query_img, "median", 3)
+                            query_img = denoised_img
                     set_result.append(
                         self.descriptor.compute_image_similarity(
                             self.image_dataset, self.similarity_mode,
