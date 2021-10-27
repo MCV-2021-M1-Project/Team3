@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 from matplotlib import pyplot as plt
-from similarity import color_similarity as compute_similarity_measure
+from similarity import compute_similarity as compute_similarity_measure
 
 class ColorDescriptor(object):
 
