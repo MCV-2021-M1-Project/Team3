@@ -9,6 +9,7 @@ from mapk import mapk
 from background_remover import Canvas
 from text_extraction import Text
 from color_descriptor import ColorDescriptor
+from texture_descriptor import TextureDescriptor
 
 CANVAS_TMP_FOLDER = "canvas_tmp_folder"
 CANVAS_TMP_FOLDER_CROPPED = "canvas_tmp_folder_cropped"
@@ -90,6 +91,7 @@ args = parser.parse_args()
 k = args.number_results
 
 descriptor = ColorDescriptor(color_space=args.metric.split("_")[0], scales=args.number_blocks)
+descriptor_2 = TextureDescriptor(color_space=args.metric.split("_")[0], scales=args.number_blocks)
 museum_similarity_comparator = museum.Museum(
     args.museum_images_path, descriptor, similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
 )
@@ -115,26 +117,34 @@ if args.rm_background:
                 temp_list.append((x2,y2))
             list_of_coords.append(temp_list)
     results.create_results(list_of_coords, file_path=os.path.join(query_image_path,"coordinates_mask_original_image.pkl"))
-    query_image_path = CANVAS_TMP_FOLDER_CROPPED
+    #query_image_path = CANVAS_TMP_FOLDER_CROPPED
 
 final_result = []
 if os.path.isdir(query_image_path):
-    for image in sorted(os.listdir(query_image_path)):
-        try:
-            # working multiscale
-            print(os.path.join(query_image_path, image))
-            result = museum_similarity_comparator.compute_similarity(
-                os.path.join(query_image_path, image), args.metric, 
-                text_extractor_method=text_extractor.text_extraction
-            )
-            # working at given image size
-            #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
-        except museum.FileIsNotImageError:
-            continue
-        result.sort(key=lambda x: x[1]) # resulting score sorted
-        result = result[:k] # take the k elements
-        result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
-        final_result.append(result)
+    for original_image in sorted(os.listdir(query_image_path)):
+        if museum_similarity_comparator.file_is_image(os.path.join(query_image_path, original_image)):
+            image_set = ["crop_{}.jpg".format(original_image.split(".")[0]),"crop_{}_2.jpg".format(original_image.split(".")[0])] if args.rm_background else [original_image]
+            img_path = CANVAS_TMP_FOLDER_CROPPED if args.rm_background else query_image_path
+            img_set_res = []
+            for image in image_set:
+                if os.path.isfile(os.path.join(img_path, image)):
+                    try:
+                        # working multiscale
+                        print(os.path.join(img_path, image))
+                        result = museum_similarity_comparator.compute_similarity(
+                            os.path.join(img_path, image), args.metric, 
+                            text_extractor_method=text_extractor.text_extraction
+                        )
+                        # working at given image size
+                        #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
+                    except museum.FileIsNotImageError:
+                        continue
+                    result.sort(key=lambda x: x[1]) # resulting score sorted
+                    result = result[:k] # take the k elements
+                    result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
+                    img_set_res.append(result)
+            final_result.append(img_set_res)
+            print(final_result)
     if args.ground_truth is not None:
         gt = results.ground_truth(args.ground_truth)
         mapk_result = mapk(gt, final_result, k=k)
