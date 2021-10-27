@@ -26,23 +26,48 @@ class ColorDescriptor(object):
         self.scales = scales
 
 
-    def compute_standard_histogram(self, channels: np.ndarray):
+    def compute_standard_histogram(self, channels: np.ndarray, mask=None):
         hist_chan = []
         for channel in channels:
-            hist = cv2.calcHist([channel], [0], None, [256], [0, 256])
+            hist = cv2.calcHist([channel], [0], mask, [256], [0, 256])
             hist = cv2.normalize(hist, hist)
             hist_chan.append(hist)
         hist = np.concatenate((hist_chan))
         return hist
 
-    def compute_3d_rgb_histogram(self, channels: np.ndarray):
+    def compute_3d_rgb_histogram(self, channels: np.ndarray, mask=None):
         """
             3D color histogram (utilizing all channels) with 8 bins in each direction 
         """
 
-        hist = cv2.calcHist([channels], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+        hist = cv2.calcHist([channels], [0, 1, 2], mask, [8, 8, 8], [0, 256, 0, 256, 0, 256])
         hist = cv2.normalize(hist, hist)
         return hist.flatten()
+
+    def compute_3d_lab_histogram(self, channels:np.ndarray, mask=None):
+        """
+          Lab definition:
+          L*a*b* breaks the colors down based on human perception and the opponent process of vision. 
+          The channels are perceptual lightness, and a* and b* which encode red/green and blue/yellow respectively, 
+
+          Then, we will focus on the chromatic representation. Bins has been set empirically
+        """
+
+        hist = cv2.calcHist([channels], [0, 1, 2], mask, [2, 24, 24], [0, 256, 0, 256, 0, 256])
+        hist = cv2.normalize(hist, hist)
+        return hist.flatten()
+
+    def compute_hist_mask(image, bbox):
+        if bbox is None:
+            return np.ones(image.shape[:2]).astype(np.uint8)
+        else:
+            mask = np.ones(image.shape[:2], dtype="uint8")*255
+            cv2.rectangle(mask, (bbox[0],bbox[1]), (bbox[2],bbox[3]), 0, -1)
+
+            # display the masked region
+            #masked = cv2.bitwise_and(image, image, mask=mask)
+            #cv2.imshow("Applying the Mask", masked)
+            return mask.astype(np.uint8)
 
     def compute_3d_tiled_histogram(self, channels: np.ndarray, metric:str, bbox:tuple = None):
         """ input_params
@@ -53,12 +78,9 @@ class ColorDescriptor(object):
         #if the tile size is not defined at init, we will divide the image in 
         histogram = []
         channels = cv2.cvtColor(channels, self.color_space_map[self.color_space])
-
-        if bbox is not None:
+        mask = self.compute_hist_mask(channels, bbox)
             # substitute the bounding box with the image mean 
-            #cv2.imwrite("before.png", channels)
-            channels[bbox[1]:bbox[3],bbox[0]:bbox[2]] = channels.mean(axis=(0,1))
-            #cv2.imwrite("after_fliped.png", channels)
+            #channels[bbox[1]:bbox[3],bbox[0]:bbox[2]] = channels.mean(axis=(0,1))
         for pyramid_lvl in range(self.scales+1):
             n_blocks = 2 ** pyramid_lvl
             M = channels.shape[0]//n_blocks
@@ -69,27 +91,15 @@ class ColorDescriptor(object):
                     #y1 = y + M
                     #x1 = x + N
                     tile = channels[y:y+M,x:x+N]
+                    tile_mask = mask[y:y+M,x:x+N]
                     #if there is not bbox param, we compute hist for all the tiles
                     #if bbox is None:
-                    hist = self.histogram_function_map[metric](tile)
+                    hist = self.histogram_function_map[metric](tile, tile_mask)
                     hist_scale.extend(hist)
 
             histogram.extend(np.stack(hist_scale).flatten())
 
         return np.stack(histogram).flatten() # Join the histograms and flat them in one dimension array
-
-    def compute_3d_lab_histogram(self, channels:np.ndarray):
-        """
-          Lab definition:
-          L*a*b* breaks the colors down based on human perception and the opponent process of vision. 
-          The channels are perceptual lightness, and a* and b* which encode red/green and blue/yellow respectively, 
-
-          Then, we will focus on the chromatic representation. Bins has been set empirically
-        """
-
-        hist = cv2.calcHist([channels], [0, 1, 2], None, [2, 24, 24], [0, 256, 0, 256, 0, 256])
-        hist = cv2.normalize(hist, hist)
-        return hist.flatten()
 
     def compute_histogram(self, image: np.ndarray, metric: str, plot=False):
         """
