@@ -69,7 +69,6 @@ class Museum(object):
                             query_img, metric, text_extractor_method
                         )
                     )
-                    print(set_result)
                 except FileIsNotImageError:
                     pass
         else:
