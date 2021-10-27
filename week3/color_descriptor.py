@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 from matplotlib import pyplot as plt
-
+from similarity import compute_similarity_measure
 
 class ColorDescriptor(object):
 
@@ -124,13 +124,16 @@ class ColorDescriptor(object):
             plt.xlim([0, 256])
             plt.show()
         return hist
+    
+    def compute_image_similarity(self, query_img, metric, text_extractor_method):
+        self.compute_image_multiscale_similarity(query_img, metric , text_extractor_method)
 
-    def compute_image_similarity(self, query_img, metric:str ):
+    def compute_simple_image_similarity(self, query_img, metric:str ):
         result = []
         query_img_hist = self.compute_histogram(query_img, metric=metric)
         for image in self.image_dataset.keys():
             image_hist = self.compute_histogram(self.image_dataset[image]["image_obj"], metric=metric)
-            sim_result = compute_similarity(image_hist, query_img_hist,self.similarity_mode)
+            sim_result = compute_similarity_measure(image_hist, query_img_hist,self.similarity_mode)
             result.append([image, sim_result])
         return result
 
@@ -140,6 +143,6 @@ class ColorDescriptor(object):
         query_img_hist = self.compute_3d_tiled_histogram(query_img, metric, bbox_query)
         for image in self.image_dataset.keys():
             image_hist = self.compute_3d_tiled_histogram(self.image_dataset[image]["image_obj"], metric)
-            sim_result = compute_similarity(image_hist, query_img_hist,self.similarity_mode)
+            sim_result = compute_similarity_measure(image_hist, query_img_hist,self.similarity_mode)
             result.append([image, sim_result])
         return result

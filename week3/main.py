@@ -8,6 +8,7 @@ import results
 from mapk import mapk
 from background_remover import Canvas
 from text_extraction import Text
+from color_descriptor import ColorDescriptor
 
 CANVAS_TMP_FOLDER = "canvas_tmp_folder"
 CANVAS_TMP_FOLDER_CROPPED = "canvas_tmp_folder_cropped"
@@ -81,7 +82,10 @@ parser.set_defaults(rm_background=False)
 args = parser.parse_args()
 k = args.number_results
 
-museum_similarity_comparator = museum.Museum(args.museum_images_path, rm_frame=True, similarity_mode=args.similarity, color_space=args.metric.split("_")[0], scales=args.number_blocks)
+descriptor = ColorDescriptor(color_space=args.metric.split("_")[0], scales=args.number_blocks)
+museum_similarity_comparator = museum.Museum(
+    args.museum_images_path, descriptor, rm_frame=True, similarity_mode=args.similarity
+)
 canvas = Canvas()
 text_extractor = Text()
 
@@ -111,7 +115,7 @@ if os.path.isdir(query_image_path):
     for image in sorted(os.listdir(query_image_path)):
         try:
             # working multiscale
-            result = museum_similarity_comparator.compute_image_multiscale_similarity(os.path.join(query_image_path, image), args.metric, text_extractor.text_extraction)
+            result = museum_similarity_comparator.compute_image_similarity(os.path.join(query_image_path, image), args.metric, text_extractor_method=text_extractor.text_extraction)
             # working at given image size
             #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
         except museum.FileIsNotImageError:
@@ -129,7 +133,7 @@ if os.path.isdir(query_image_path):
         print(gt)
 else:
     # working multiscale
-    result = museum_similarity_comparator.compute_image_multiscale_similarity(query_image_path, args.metric)
+    result = museum_similarity_comparator.compute_image_similarity(query_image_path, args.metric)
     # working at given image size
     #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
     result.sort(key=lambda x: x[1]) # resulting score sorted

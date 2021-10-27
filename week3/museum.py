@@ -3,7 +3,6 @@ from PIL import Image, ImageChops
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
-from similarity import compute_similarity
 from color_descriptor import ColorDescriptor
 VALID_IMAGE_FORMATS = ['JPEG']
 
@@ -116,7 +115,7 @@ class Museum(object):
 
 
 if __name__ == "__main__":
-    descriptor = ColorDescriptor(color_space="gray", scales= 3)
+    descriptor = ColorDescriptor(color_space="lab_3d", scales= 3)
     museum = Museum("datasets/BBDD",descriptor, rm_frame=True)
     result = museum.compute_similarity("datasets/BBDD/bbdd_00002.jpg")
     print(result)
