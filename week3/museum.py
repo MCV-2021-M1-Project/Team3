@@ -85,7 +85,6 @@ class Museum(object):
                 self.image_dataset, self.similarity_mode, 
                 query_img, metric, text_extractor_method
             )
-            print(set_result)
         return set_result
 
 
