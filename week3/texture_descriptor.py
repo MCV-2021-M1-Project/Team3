@@ -27,8 +27,8 @@ class TextureDescriptor(object):
         }
         self.descriptor = descriptor
         winSize = (64, 64)
-        blockSize = (32, 32)
-        blockStride = (32, 32)
+        blockSize = (64, 64)
+        blockStride = (64, 64)
         cellSize = (8, 8)
         nbins = 9
         derivAperture = 1
@@ -41,7 +41,7 @@ class TextureDescriptor(object):
             'HOG': cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, nbins, derivAperture, winSigma,
                                      histogramNormType, L2HysThreshold, gammaCorrection, nlevels).compute,
             'DCT': scipy.fft.dctn,
-            'color_histogram': self.compute_3d_rgb_histogram,
+            #'color_histogram': self.compute_3d_rgb_histogram,
             # 'GWT':bob.ip.gabor.Transform().transform,
             'binary_pattern': skimage.feature.local_binary_pattern,
             # skimage.feature.local_binary_pattern(a,8,1)
@@ -143,6 +143,9 @@ class TextureDescriptor(object):
             query_img_hist = self.compute_descriptor(query_img)
         for image in image_dataset.keys():
             image_hist = self.compute_descriptor(image_dataset[image]["image_obj"])
+            min_size = min(image_hist.shape[0], query_img_hist.shape[0])
+            image_hist = image_hist[:min_size]
+            query_img_hist = query_img_hist[:min_size]
             sim_result = compute_similarity(
                 image_hist, query_img_hist, similarity_mode)
             result.append([image, sim_result])
