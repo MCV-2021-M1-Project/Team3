@@ -55,7 +55,7 @@ parser.add_argument('-g', '--ground_truth',
 parser.add_argument('-m', '--metric',
                        metavar='metric',
                        type=str,
-                       choices=["gray","rgb_1d","rgb_3d","hsv","lab", "lab_3d"],
+                       choices=["gray","rgb_1d","rgb_3d","hsv","lab", "lab_3d", "HOG"],
                        default="gray",
                        help='The color spaces avaliable for the histogram computation')
 
@@ -69,7 +69,7 @@ parser.add_argument('-k', '--number_results',
 parser.add_argument('-b', '--number_blocks',
                        metavar='number_blocks',
                        type=int,
-                       default=3,
+                       default=0,
                        help='The number of rows and cols to devide image')
 
 parser.add_argument('--remove_back',
@@ -90,8 +90,8 @@ parser.set_defaults(rm_noise=False)
 args = parser.parse_args()
 k = args.number_results
 
-descriptor = ColorDescriptor(color_space=args.metric.split("_")[0], scales=args.number_blocks)
-descriptor_2 = TextureDescriptor(color_space=args.metric.split("_")[0], scales=args.number_blocks)
+descriptor = ColorDescriptor(color_space=args.metric.split("_")[0], metric= args.metric, scales=args.number_blocks)
+descriptor_2 = TextureDescriptor(color_space=args.metric.split("_")[0], descriptor = "HOG", scales=args.number_blocks)
 museum_similarity_comparator = museum.Museum(
     args.museum_images_path, descriptor, similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
 )
@@ -132,8 +132,7 @@ if os.path.isdir(query_image_path):
                         # working multiscale
                         print(os.path.join(img_path, image))
                         result = museum_similarity_comparator.compute_similarity(
-                            os.path.join(img_path, image), args.metric, 
-                            text_extractor_method=text_extractor.text_extraction
+                            os.path.join(img_path, image), text_extractor_method=None#text_extractor.text_extraction
                         )
                         # working at given image size
                         #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
@@ -155,8 +154,7 @@ if os.path.isdir(query_image_path):
 else:
     # working multiscale
     result = museum_similarity_comparator.compute_similarity(
-        query_image_path, args.metric, 
-        text_extractor_method=text_extractor.text_extraction
+        query_image_path, text_extractor_method=text_extractor.text_extraction
     )
     # working at given image size
     #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)

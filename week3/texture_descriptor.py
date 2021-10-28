@@ -27,8 +27,8 @@ class TextureDescriptor(object):
         }
         self.descriptor = descriptor
         winSize = (64, 64)
-        blockSize = (16, 16)
-        blockStride = (8, 8)
+        blockSize = (32, 32)
+        blockStride = (32, 32)
         cellSize = (8, 8)
         nbins = 9
         derivAperture = 1
@@ -118,7 +118,6 @@ class TextureDescriptor(object):
                     tile = channels[y:y+M, x:x+N]
                     if bbox is not None:
                         tile_mask = mask[y:y+M, x:x+N]
-                    print(tile.shape)
                     # if there is not bbox param, we compute hist for all the tiles
                     # if bbox is None:
                     if bbox is not None:

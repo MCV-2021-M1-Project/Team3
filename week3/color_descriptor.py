@@ -6,7 +6,7 @@ from similarity import compute_similarity as compute_similarity_measure
 
 class ColorDescriptor(object):
 
-    def __init__(self, color_space:str ="gray", scales:int = 3) -> None:
+    def __init__(self, color_space:str ="lab", metric:str ="lab_3d", scales:int = 3) -> None:
         self.color_space_map = {
             "gray": cv2.COLOR_BGR2GRAY,
             "rgb": cv2.COLOR_BGR2RGB,
@@ -22,6 +22,7 @@ class ColorDescriptor(object):
             "lab": self.compute_standard_histogram,
             "lab_3d": self.compute_3d_lab_histogram
         }
+        self.metric = metric
         self.color_space = color_space
         self.scales = scales
 
@@ -126,25 +127,28 @@ class ColorDescriptor(object):
             plt.show()
         return hist
     
-    def compute_image_similarity(self, dataset, similarity_mode, query_img, metric, text_extractor_method):
-        result = self.compute_image_multiscale_similarity(dataset, similarity_mode, query_img, metric , text_extractor_method)
+    def compute_image_similarity(self, dataset, similarity_mode, query_img, text_extractor_method):
+        result = self.compute_image_multiscale_similarity(dataset, similarity_mode, query_img, text_extractor_method)
         return result
 
-    def compute_simple_image_similarity(self, dataset, similarity_mode, query_img, metric:str ):
+    def compute_simple_image_similarity(self, dataset, similarity_mode, query_img):
         result = []
-        query_img_hist = self.compute_histogram(query_img, metric=metric)
+        query_img_hist = self.compute_histogram(query_img, metric=self.metric)
         for image in dataset.keys():
-            image_hist = self.compute_histogram(dataset[image]["image_obj"], metric=metric)
+            image_hist = self.compute_histogram(dataset[image]["image_obj"], metric=self.metric)
             sim_result = compute_similarity_measure(image_hist, query_img_hist,similarity_mode)
             result.append([image, sim_result])
         return result
 
-    def compute_image_multiscale_similarity(self, dataset, similarity_mode, query_img, metric:str , text_extractor_method: callable):
+    def compute_image_multiscale_similarity(self, dataset, similarity_mode, query_img , text_extractor_method: callable):
         result = []
-        bbox_query ,  _= text_extractor_method(query_img,None,None)
-        query_img_hist = self.compute_3d_tiled_histogram(query_img, metric, bbox_query)
+        if text_extractor_method is not None:
+            bbox_query ,  _= text_extractor_method(query_img,None,None)
+        else:
+            bbox_query = None
+        query_img_hist = self.compute_3d_tiled_histogram(query_img, self.metric, bbox_query)
         for image in dataset.keys():
-            image_hist = self.compute_3d_tiled_histogram(dataset[image]["image_obj"], metric)
+            image_hist = self.compute_3d_tiled_histogram(dataset[image]["image_obj"], metric=self.metric)
             sim_result = compute_similarity_measure(image_hist, query_img_hist, similarity_mode)
             result.append([image, sim_result])
         return result

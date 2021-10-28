@@ -60,12 +60,13 @@ class Museum(object):
         else:
             raise FileIsNotImageError("The provided file does not match an Image type")
     
-    def compute_similarity(self, image_set: str, metric:str, text_extractor_method:callable):
+    def compute_similarity(self, image_set:str, text_extractor_method:callable):
         set_result = []
         if os.path.isdir(image_set):
             for image in os.listdir(image_set):
                 try:
                     query_img = self.load_query_img(os.path.join(image_set,image))
+                    print(image)
                     if self.rm_noise:
                         img_gray = cv2.cvtColor(query_img, cv2.COLOR_BGR2GRAY) 
                         if  self.noise_remover.is_noisy_img(img_gray):
@@ -74,7 +75,7 @@ class Museum(object):
                     set_result.append(
                         self.descriptor.compute_image_similarity(
                             self.image_dataset, self.similarity_mode,
-                            query_img, metric, text_extractor_method
+                            query_img, text_extractor_method
                         )
                     )
                 except FileIsNotImageError:
@@ -83,7 +84,7 @@ class Museum(object):
             query_img = self.load_query_img(image_set) 
             set_result = self.descriptor.compute_image_similarity(
                 self.image_dataset, self.similarity_mode, 
-                query_img, metric, text_extractor_method
+                query_img, text_extractor_method
             )
         return set_result
 
