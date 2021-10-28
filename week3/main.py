@@ -69,7 +69,7 @@ parser.add_argument('-k', '--number_results',
 parser.add_argument('-b', '--number_blocks',
                        metavar='number_blocks',
                        type=int,
-                       default=0,
+                       default=3,
                        help='The number of rows and cols to devide image')
 
 parser.add_argument('--remove_back',
@@ -92,7 +92,8 @@ k = args.number_results
 
 descriptor = ColorDescriptor(color_space=args.metric.split("_")[0], metric= args.metric, scales=args.number_blocks)
 descriptor_2 = TextureDescriptor(color_space=args.metric.split("_")[0], descriptor = "HOG", scales=args.number_blocks)
-descriptor =  descriptor_2
+descriptor_3 = Text()
+#descriptor =  descriptor_2
 museum_similarity_comparator = museum.Museum(
     args.museum_images_path, descriptor, similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
 )
