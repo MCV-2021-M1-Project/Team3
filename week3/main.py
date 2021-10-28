@@ -51,7 +51,7 @@ parser.add_argument('descriptor',
 parser.add_argument('similarity',
                        metavar='similarity',
                        type=str,
-                       choices=["L1_norm", "L2_norm", "cosine_similarity", "histogram_intersection", "hellinger_similarity", "haming", "levenshtein"],
+                       choices=["L1_norm", "L2_norm", "cosine_similarity", "histogram_intersection", "hellinger_similarity", "levenshtein"],
                        help='The similaritie measures avaliable to compute the measure')
 
 parser.add_argument('-g', '--ground_truth',
@@ -109,7 +109,7 @@ descriptor_2 = TextureDescriptor(color_space=args.metric.split("_")[0], descript
 descriptor_3 = Text()
 #descriptor =  descriptor_2
 museum_similarity_comparator = museum.Museum(
-    args.museum_images_path, descriptor_choice[descriptor], similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
+    args.museum_images_path, descriptor_choice[args.descriptor], similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
 )
 canvas = Canvas()
 text_extractor = Text()
