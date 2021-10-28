@@ -142,7 +142,7 @@ if os.path.isdir(query_image_path):
                     result.sort(key=lambda x: x[1]) # resulting score sorted
                     result = result[:k] # take the k elements
                     result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
-                    img_set_res.append(result)
+                    img_set_res.append(result if args.rm_background else result[0])
             final_result.append(img_set_res)
             print(final_result)
     if args.ground_truth is not None:
