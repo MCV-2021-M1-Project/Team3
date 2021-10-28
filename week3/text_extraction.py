@@ -9,7 +9,7 @@ import re
 import textdistance
 from math import exp
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\usuario\AppData\\Local\\Tesseract-OCR\\tesseract'
+#pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\usuario\AppData\\Local\\Tesseract-OCR\\tesseract'
 
 TEXT_SIMILARITIES_ALG = {
     'haming':textdistance.hamming,
@@ -226,8 +226,7 @@ class Text(object):
         print('SIM2:',distance)
         return 1 - distance,distance1
 
-    def text_extraction(self,path,save_path,f):
-        img = self.input_image(path)
+    def text_extraction(self,img,save_path,f):
         sum2 = self.pre_process(img)
         (T, threshInv) = cv2.threshold(sum2, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         bbox,x1,y1,w1,h1,cx,cy = self.search_elements(img,threshInv)
@@ -245,10 +244,23 @@ class Text(object):
         ###print('---------------------------------------------------------')
         return bbox,mask,text
 
+    def compute_image_similarity(
+        self, dataset, similarity_mode, query_img, text_extractor_method
+    ):
+        result = []
+        _, _, text = self.text_extraction(query_img, None, None)
+        for image in dataset.keys():
+            _, distance = self.text_distance(dataset[image]["image_text"], text)
+            result.append([image, 1-distance])
+        return result
+
+                
+
 valid_images = [".jpg"]
 path = 'C:\\Users\\usuario\\Documents\\GitHub\\ABC\\CV_M1\\W3\\QSD1'
 save_path = 'C:\\Users\\usuario\\Documents\\GitHub\\ABC\\CV_M1\\W3\\QSD1\\generated_text_masks'
-
+path = "datasets/qsd1_w3"
+save_path = None
 if __name__ == "__main__":
     text_id = Text()
     for f in os.listdir(path):
@@ -259,6 +271,7 @@ if __name__ == "__main__":
         #path_in = path + '\\' + f
         path_in = os.path.join(path, f)
         #print(path_in)
-        bbox,mask,text = text_id.text_extraction(path_in,save_path,file_name)
+        img = text_id.input_image(path_in)
+        bbox,mask,text = text_id.text_extraction(img,save_path,file_name)
         print(f)
         print('TEXT:',text)

@@ -131,7 +131,6 @@ if os.path.isdir(query_image_path):
                 if os.path.isfile(os.path.join(img_path, image)):
                     try:
                         # working multiscale
-                        print(os.path.join(img_path, image))
                         result = museum_similarity_comparator.compute_similarity(
                             os.path.join(img_path, image), text_extractor_method=None#text_extractor.text_extraction
                         )

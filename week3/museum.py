@@ -34,6 +34,12 @@ class Museum(object):
         self.rm_noise = rm_noise
         self.noise_remover = NoiseRemover()
 
+    def extract_text_from_files(self, text_path):
+        with open(text_path, "r") as file_r:
+            text = file_r.read()
+            print(text)
+        return text
+
     def load_images_dataset(self, image_path: str, ):
         """
         Method to load the image from dataset path
@@ -42,12 +48,15 @@ class Museum(object):
         for image_name in os.listdir(image_path):
             if self.file_is_image(os.path.join(image_path, image_name)):
                 image = cv2.imread(os.path.join(image_path, image_name))
+                print(os.path.join(image_path, image_name.replace(".jpg", ".txt")))
+                image_text = self.extract_text_from_files(os.path.join(image_path, image_name.replace(".jpg", ".txt")))
                 if self.rm_frame:
                     image = self.remove_frame(image)
                 image_num = self.get_image_number(image_name)
                 image_dataset[image_num] = {
                     "image_name": image_name,
-                    "image_obj": image
+                    "image_obj": image,
+                    "image_text": image_text
                 }
         return image_dataset
     
