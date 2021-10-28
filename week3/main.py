@@ -41,10 +41,17 @@ parser.add_argument('query_image_path',
                        type=str,
                        help='The image path or directory of images to be compared to with the museum dataset')
 
+parser.add_argument('descriptor',
+                       metavar='descriptor',
+                       type=str,
+                       choices=["color", "texture", "text", "mixt"],
+                       help='The similaritie measures avaliable to compute the measure')
+
+
 parser.add_argument('similarity',
                        metavar='similarity',
                        type=str,
-                       choices=["L1_norm", "L2_norm", "cosine_similarity", "histogram_intersection", "hellinger_similarity"],
+                       choices=["L1_norm", "L2_norm", "cosine_similarity", "histogram_intersection", "hellinger_similarity", "haming"],
                        help='The similaritie measures avaliable to compute the measure')
 
 parser.add_argument('-g', '--ground_truth',
@@ -89,13 +96,20 @@ parser.set_defaults(rm_noise=False)
 # Parse arguments
 args = parser.parse_args()
 k = args.number_results
-
+descriptor_color = ColorDescriptor(color_space=args.metric.split("_")[0], metric= args.metric, scales=args.number_blocks)
+descriptor_textura= TextureDescriptor(color_space=args.metric.split("_")[0], descriptor = "HOG", scales=args.number_blocks)
+descriptor_text = Text()
+descriptor_choice = {
+    "color": descriptor_color,
+    "textura": descriptor_textura,
+    "text":descriptor_text
+}
 descriptor = ColorDescriptor(color_space=args.metric.split("_")[0], metric= args.metric, scales=args.number_blocks)
 descriptor_2 = TextureDescriptor(color_space=args.metric.split("_")[0], descriptor = "HOG", scales=args.number_blocks)
 descriptor_3 = Text()
 #descriptor =  descriptor_2
 museum_similarity_comparator = museum.Museum(
-    args.museum_images_path, descriptor, similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
+    args.museum_images_path, descriptor_choice[descriptor], similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
 )
 canvas = Canvas()
 text_extractor = Text()

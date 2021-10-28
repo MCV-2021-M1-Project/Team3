@@ -16,7 +16,7 @@ TEXT_SIMILARITIES_ALG = {
     'mlipns':textdistance.mlipns,
     'ratcliff_obershelp': textdistance.ratcliff_obershelp,
     'gotoh':textdistance.gotoh,
-    'cosine': textdistance.cosine,
+    'cosine_similarity': textdistance.cosine,
     'levenshtein': textdistance.levenshtein.normalized_similarity,
     }
 
@@ -221,9 +221,9 @@ class Text(object):
         if text_1 is None or text_2 is None:
             return 1.0
         distance1 = TEXT_SIMILARITIES_ALG[alg](text_1, text_2)
-        print('SIM1:',distance1)
+        #print('SIM1:',distance1)
         distance = 1 / (1 + exp(-50*(distance1-0.05)))
-        print('SIM2:',distance)
+        #print('SIM2:',distance)
         return 1 - distance,distance1
 
     def text_extraction(self,img,save_path,f):
@@ -250,7 +250,7 @@ class Text(object):
         result = []
         _, _, text = self.text_extraction(query_img, None, None)
         for image in dataset.keys():
-            _, distance = self.text_distance(dataset[image]["image_text"], text)
+            _, distance = self.text_distance(dataset[image]["image_text"], text, similarity_mode)
             result.append([image, 1-distance])
         return result
 

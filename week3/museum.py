@@ -48,7 +48,6 @@ class Museum(object):
         for image_name in os.listdir(image_path):
             if self.file_is_image(os.path.join(image_path, image_name)):
                 image = cv2.imread(os.path.join(image_path, image_name))
-                print(os.path.join(image_path, image_name.replace(".jpg", ".txt")))
                 image_text = self.extract_text_from_files(os.path.join(image_path, image_name.replace(".jpg", ".txt")))
                 if self.rm_frame:
                     image = self.remove_frame(image)
