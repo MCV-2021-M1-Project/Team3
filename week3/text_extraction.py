@@ -12,9 +12,12 @@ from math import exp
 pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\usuario\AppData\\Local\\Tesseract-OCR\\tesseract'
 
 TEXT_SIMILARITIES_ALG = {
-    "ratcliff_obershelp": textdistance.ratcliff_obershelp,
-    "levenshtein": textdistance.levenshtein.normalized_similarity,
-    "cosine": textdistance.cosine,
+    'haming':textdistance.hamming,
+    'mlipns':textdistance.mlipns,
+    'ratcliff_obershelp': textdistance.ratcliff_obershelp,
+    'gotoh':textdistance.gotoh,
+    'cosine': textdistance.cosine,
+    'levenshtein': textdistance.levenshtein.normalized_similarity,
     }
 
 class Text(object):
@@ -259,4 +262,3 @@ if __name__ == "__main__":
         bbox,mask,text = text_id.text_extraction(path_in,save_path,file_name)
         print(f)
         print('TEXT:',text)
-
