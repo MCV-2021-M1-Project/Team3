@@ -37,7 +37,6 @@ class Museum(object):
     def extract_text_from_files(self, text_path):
         with open(text_path, "r") as file_r:
             text = file_r.read()
-            print(text)
         return text
 
     def load_images_dataset(self, image_path: str, ):

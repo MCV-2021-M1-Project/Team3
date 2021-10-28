@@ -51,7 +51,7 @@ parser.add_argument('descriptor',
 parser.add_argument('similarity',
                        metavar='similarity',
                        type=str,
-                       choices=["L1_norm", "L2_norm", "cosine_similarity", "histogram_intersection", "hellinger_similarity", "haming"],
+                       choices=["L1_norm", "L2_norm", "cosine_similarity", "histogram_intersection", "hellinger_similarity", "haming", "levenshtein"],
                        help='The similaritie measures avaliable to compute the measure')
 
 parser.add_argument('-g', '--ground_truth',
