@@ -44,7 +44,7 @@ parser.add_argument('query_image_path',
 parser.add_argument('descriptor',
                        metavar='descriptor',
                        type=str,
-                       choices=["color", "texture", "text", "mixt"],
+                       choices=["color", "textura", "text", "mixt"],
                        help='The similaritie measures avaliable to compute the measure')
 
 
@@ -97,7 +97,7 @@ parser.set_defaults(rm_noise=False)
 args = parser.parse_args()
 k = args.number_results
 descriptor_color = ColorDescriptor(color_space=args.metric.split("_")[0], metric= args.metric, scales=args.number_blocks)
-descriptor_textura= TextureDescriptor(color_space=args.metric.split("_")[0], descriptor = "HOG", scales=args.number_blocks)
+descriptor_textura= TextureDescriptor(color_space=args.metric.split("_")[0], descriptor = "DCT", scales=args.number_blocks)
 descriptor_text = Text()
 descriptor_choice = {
     "color": descriptor_color,

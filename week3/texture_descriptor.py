@@ -4,7 +4,8 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 from similarity import compute_similarity
-import skimage.feature
+from skimage.feature import local_binary_pattern
+
 
 
 class TextureDescriptor(object):
@@ -42,8 +43,8 @@ class TextureDescriptor(object):
                                      histogramNormType, L2HysThreshold, gammaCorrection, nlevels).compute,
             'DCT': scipy.fft.dctn,
             #'color_histogram': self.compute_3d_rgb_histogram,
-            # 'GWT':bob.ip.gabor.Transform().transform,
-            'binary_pattern': skimage.feature.local_binary_pattern,
+            'LBP':self.lbp_histogram,
+            'DCT':self.dct_coefficients,            
             # skimage.feature.local_binary_pattern(a,8,1)
         }
         self.color_space = color_space
@@ -130,7 +131,29 @@ class TextureDescriptor(object):
 
         # Join the histograms and flat them in one dimension array
         return np.stack(histogram).flatten()
+    def lbp_histogram(self,image:np.ndarray, points:int=24, radius:float=3.0, bins:int=8, mask:np.ndarray=None) -> np.ndarray:
+        # image --> grayscale --> lbp --> histogram
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = (local_binary_pattern(image, points, radius, method="uniform")).astype(np.uint8)
 
+        bins = points + 2
+        hist = cv2.calcHist([image],[0], mask, [bins], [0, bins])
+        hist = cv2.normalize(hist, hist)
+        return hist.flatten()
+    def dct_coefficients(self,image:np.ndarray, bins:int=8, mask:np.ndarray=None, num_coeff:int=4) -> np.ndarray:
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+        if mask is not None:
+            image = cv2.bitwise_and(image, image, mask=mask)
+            
+        block_dct = cv2.dct(np.float32(image)/255.0)
+
+        def _compute_zig_zag(a):
+            return np.concatenate([np.diagonal(a[::-1,:], k)[::(2*(k % 2)-1)] for k in range(1-a.shape[0], a.shape[0])])
+        
+        features = _compute_zig_zag(block_dct[:6,:6])[:num_coeff]
+        return features
     def compute_image_similarity(self, image_dataset, similarity_mode, query_img, text_extractor_method: callable):
         result = []
         if text_extractor_method is not None:
