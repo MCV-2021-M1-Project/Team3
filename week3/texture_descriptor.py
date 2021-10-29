@@ -83,6 +83,7 @@ class TextureDescriptor(object):
         hist = cv2.normalize(hist, hist)
         return hist.flatten()
 
+    @staticmethod
     def compute_hist_mask(image, bbox):
         if bbox is None:
             return np.ones(image.shape[:2]).astype(np.uint8)
@@ -122,7 +123,7 @@ class TextureDescriptor(object):
                     # if there is not bbox param, we compute hist for all the tiles
                     # if bbox is None:
                     if bbox is not None:
-                        hist = self.descriptor_type[self.descriptor](tile, mask)
+                        hist = self.descriptor_type[self.descriptor](tile, tile_mask)
                     else:
                         hist = self.descriptor_type[self.descriptor](tile)
                     hist_scale.extend(hist)
@@ -140,7 +141,7 @@ class TextureDescriptor(object):
         hist = cv2.calcHist([image],[0], mask, [bins], [0, bins])
         hist = cv2.normalize(hist, hist)
         return hist.flatten()
-    def dct_coefficients(self,image:np.ndarray, bins:int=8, mask:np.ndarray=None, num_coeff:int=4) -> np.ndarray:
+    def dct_coefficients(self,image:np.ndarray, mask:np.ndarray=None, num_coeff:int=4) -> np.ndarray:
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
@@ -157,10 +158,10 @@ class TextureDescriptor(object):
     def compute_image_similarity(self, image_dataset, similarity_mode, query_img, text_extractor_method: callable):
         result = []
         if text_extractor_method is not None:
-            bbox_query,  _ = text_extractor_method(query_img, None, None)
-            if bbox_query and self.descriptor != 'color_histogram':
-                print('Only can use bbox with color histogram!!')
-                exit()
+            bbox_query,  _, _ = text_extractor_method(query_img, None, None)
+            #if bbox_query and self.descriptor != 'color_histogram':
+            #    print('Only can use bbox with color histogram!!')
+            #    exit()
             query_img_hist = self.compute_descriptor(query_img, bbox_query)
         else:
             query_img_hist = self.compute_descriptor(query_img)
