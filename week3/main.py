@@ -104,10 +104,6 @@ descriptor_choice = {
     "textura": descriptor_textura,
     "text":descriptor_text
 }
-descriptor = ColorDescriptor(color_space=args.metric.split("_")[0], metric= args.metric, scales=args.number_blocks)
-descriptor_2 = TextureDescriptor(color_space=args.metric.split("_")[0], descriptor = "HOG", scales=args.number_blocks)
-descriptor_3 = Text()
-#descriptor =  descriptor_2
 museum_similarity_comparator = museum.Museum(
     args.museum_images_path, descriptor_choice[args.descriptor], similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
 )
