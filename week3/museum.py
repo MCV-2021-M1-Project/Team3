@@ -1,6 +1,8 @@
 import os
 from PIL import Image, ImageChops
+from numpy.lib.arraysetops import isin
 import cv2
+from text_extraction import Text
 from matplotlib import pyplot as plt
 import numpy as np
 from color_descriptor import ColorDescriptor
@@ -18,7 +20,7 @@ class Museum(object):
     extrat its feature descriptors.
     """
 
-    def __init__(self, data_set_path: str, descriptor:callable, similarity_mode: str ="L1_norm", rm_frame:bool = False, rm_noise:bool = False ):
+    def __init__(self, data_set_path: str, descriptor:callable, similarity_mode: str ="L1_norm", rm_frame:bool = False, rm_noise:bool = False):
         """[summary]
 
         Args:
@@ -35,6 +37,7 @@ class Museum(object):
         self.noise_remover = NoiseRemover()
 
     def extract_text_from_files(self, text_path):
+        #print(text_path)
         with open(text_path, "r") as file_r:
             text = file_r.read()
         return text
@@ -79,21 +82,66 @@ class Museum(object):
                         if  self.noise_remover.is_noisy_img(img_gray):
                             denoised_img = self.noise_remover.remove_noise(query_img, "median", 3)
                             query_img = denoised_img
-                    set_result.append(
+                    if  not isinstance(self.descriptor, list):      
+                        set_result.append(
                         self.descriptor.compute_image_similarity(
                             self.image_dataset, self.similarity_mode,
                             query_img, text_extractor_method
                         )
                     )
+                    else:
+                        similarities = []
+                        for descriptor in self.descriptor:
+                            if isinstance(descriptor,Text):                                
+                                similarities.append(descriptor.compute_image_similarity(
+                                    self.image_dataset, 'cosine_similarity',
+                                    query_img, text_extractor_method
+                                ))
+                            else:
+                                similarities.append(descriptor.compute_image_similarity(
+                                    self.image_dataset,self.similarity_mode,
+                                    query_img, text_extractor_method
+                                ))
+
+                        set_result.extend([sim for sim in similarities])   
+
+                      
+                        
+                     
+
+
                 except FileIsNotImageError:
                     pass
         else:
             query_img = self.load_query_img(image_set) 
-            set_result = self.descriptor.compute_image_similarity(
+            """set_result = self.descriptor.compute_image_similarity(
+                self.image_dataset, self.similarity_mode, 
+                query_img, text_extractor_method
+            )"""
+            if  not isinstance(self.descriptor, list):      
+                set_result = self.descriptor.compute_image_similarity(
                 self.image_dataset, self.similarity_mode, 
                 query_img, text_extractor_method
             )
-        return set_result
+                    
+                return set_result    
+            else:
+                similarities = []
+                for descriptor in self.descriptor:
+                            if isinstance(descriptor,Text):                                
+                                similarities.append(descriptor.compute_image_similarity(
+                                    self.image_dataset, 'levenshtein',
+                                    query_img, text_extractor_method
+                                ))
+                            else:
+                                similarities.append(descriptor.compute_image_similarity(
+                                    self.image_dataset,self.similarity_mode,
+                                    query_img, text_extractor_method
+                                ))
+                #print(similarities,self.weights)
+                return similarities                
+                return [sim*weight for sim,weight in zip(similarities,self.weights)]            
+        
 
 
     @staticmethod

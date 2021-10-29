@@ -41,11 +41,9 @@ class TextureDescriptor(object):
         self.descriptor_type = {
             'HOG': cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, nbins, derivAperture, winSigma,
                                      histogramNormType, L2HysThreshold, gammaCorrection, nlevels).compute,
-            'DCT': scipy.fft.dctn,
-            #'color_histogram': self.compute_3d_rgb_histogram,
             'LBP':self.lbp_histogram,
             'DCT':self.dct_coefficients,            
-            # skimage.feature.local_binary_pattern(a,8,1)
+            
         }
         self.color_space = color_space
         self.scales = scales
@@ -157,6 +155,7 @@ class TextureDescriptor(object):
         return features
     def compute_image_similarity(self, image_dataset, similarity_mode, query_img, text_extractor_method: callable):
         result = []
+        print()
         if text_extractor_method is not None:
             bbox_query,  _, _ = text_extractor_method(query_img, None, None)
             #if bbox_query and self.descriptor != 'color_histogram':
@@ -167,9 +166,9 @@ class TextureDescriptor(object):
             query_img_hist = self.compute_descriptor(query_img)
         for image in image_dataset.keys():
             image_hist = self.compute_descriptor(image_dataset[image]["image_obj"])
-            min_size = min(image_hist.shape[0], query_img_hist.shape[0])
-            image_hist = image_hist[:min_size]
-            query_img_hist = query_img_hist[:min_size]
+            #min_size = min(image_hist.shape[0], query_img_hist.shape[0])
+            #image_hist = image_hist[:min_size]
+            #query_img_hist = query_img_hist[:min_size]
             sim_result = compute_similarity(
                 image_hist, query_img_hist, similarity_mode)
             result.append([image, sim_result])

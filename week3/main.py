@@ -2,7 +2,7 @@ import argparse
 import os
 import argparse
 import shutil
-
+import numpy as np
 import museum
 import results
 from mapk import mapk
@@ -29,6 +29,16 @@ parser = argparse.ArgumentParser(
     description='Computer similarity between the given images and the museum dataset.',
     epilog=parser_epilog
 )
+def weight_results(results,weights):
+    assert len(weights) == len(results)    
+    for i in range(len(weights)):
+        results[i].sort(key=lambda x: x[0])
+    results = np.array(results)
+    final_results = []
+    for i in range(len(results[0])):
+        print(np.sum(results[:,i,1]*weights))
+        final_results.append([i,np.sum(results[:,i,1]*weights)])        
+    return final_results      
 
 # Add the image path argument
 parser.add_argument('museum_images_path',
@@ -41,10 +51,10 @@ parser.add_argument('query_image_path',
                        type=str,
                        help='The image path or directory of images to be compared to with the museum dataset')
 
-parser.add_argument('descriptor',
+parser.add_argument('--descriptor',
                        metavar='descriptor',
                        type=str,
-                       choices=["color", "textura", "text", "mixt"],
+                       choices=["color", "texture", "text", "mix","mix_color_text","mix_color_texture","mix_text_texture","mix_text_texture_color"],
                        help='The similaritie measures avaliable to compute the measure')
 
 
@@ -63,8 +73,14 @@ parser.add_argument('-m', '--metric',
                        metavar='metric',
                        type=str,
                        choices=["gray","rgb_1d","rgb_3d","hsv","lab", "lab_3d", "HOG"],
-                       default="gray",
+                       default="rgb_3d",
                        help='The color spaces avaliable for the histogram computation')
+parser.add_argument('-d', '--descriptor_texture_type',
+                       metavar='descriptor_texture_type',
+                       type=str,
+                       choices=["DCT","LBP", "HOG"],
+                       default="LBP",
+                       help='descriptor texture type')                       
 
 
 parser.add_argument('-k', '--number_results',
@@ -86,7 +102,7 @@ parser.add_argument('--remove_back',
                       )
 parser.set_defaults(rm_background=False)
 
-parser.add_argument('--rm_noise',
+parser.add_argument('--remove_noise',
                       dest='rm_noise', 
                       action='store_true',
                       help='Remove the noise from images'
@@ -97,16 +113,23 @@ parser.set_defaults(rm_noise=False)
 args = parser.parse_args()
 k = args.number_results
 descriptor_color = ColorDescriptor(color_space=args.metric.split("_")[0], metric= args.metric, scales=args.number_blocks)
-descriptor_textura= TextureDescriptor(color_space=args.metric.split("_")[0], descriptor = "DCT", scales=args.number_blocks)
+descriptor_texture= TextureDescriptor(color_space=args.metric.split("_")[0], descriptor = args.descriptor_texture_type, scales=args.number_blocks)
 descriptor_text = Text()
+print(type(descriptor_text))
 descriptor_choice = {
     "color": descriptor_color,
-    "textura": descriptor_textura,
-    "text":descriptor_text
+    "texture": descriptor_texture,
+    "text":descriptor_text,
+    "mix_color_text":[descriptor_color,descriptor_text],
+    "mix_color_texture":[descriptor_color,descriptor_texture],
+    "mix_text_texture":[descriptor_text,descriptor_texture],
+    "mix_text_texture_color":[descriptor_text,descriptor_texture,descriptor_color],
+
 }
 museum_similarity_comparator = museum.Museum(
-    args.museum_images_path, descriptor_choice[args.descriptor], similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise
+    args.museum_images_path, descriptor_choice[args.descriptor], similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise,
 )
+weights=[0.8,0.2]
 canvas = Canvas()
 text_extractor = Text()
 
@@ -145,10 +168,13 @@ if os.path.isdir(query_image_path):
                         result = museum_similarity_comparator.compute_similarity(
                             os.path.join(img_path, image), text_extractor_method=text_extractor.text_extraction
                         )
+                        print(result)
                         # working at given image size
                         #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
                     except museum.FileIsNotImageError:
                         continue
+                    if len(weights) > 1:
+                        result = weight_results(result,weights)
                     result.sort(key=lambda x: x[1]) # resulting score sorted
                     result = result[:k] # take the k elements
                     result = [ key for key, val in result] ## For eache element, get only the image and forget about the actual similarity value
