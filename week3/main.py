@@ -31,11 +31,17 @@ parser = argparse.ArgumentParser(
 )
 
 
-def weight_results(results, weights):
+def weight_results_and_normalize_metrics(results, weights,normalize=True):
     assert len(weights) == len(results)
     for i in range(len(weights)):
         results[i].sort(key=lambda x: x[0])    
-    results = np.array(results)
+    results = np.array(results)    
+    if normalize:
+        for i in range(1,results.shape[2]):            
+            results[:,:,i] = (results[:,:,i] - np.min(results[:,:,i]))/np.ptp(results[:,:,i])            
+        pass
+
+
     
     final_results = []
     for i in range(len(results[0])):
@@ -63,12 +69,13 @@ parser.add_argument('--descriptor',
                     help='The similaritie measures avaliable to compute the measure')
 
 
-parser.add_argument('similarity',
+"""parser.add_argument('similarity',
                     metavar='similarity',
                     type=str,
                     choices=["L1_norm", "L2_norm", "cosine_similarity",
                              "histogram_intersection", "hellinger_similarity", "levenshtein"],
-                    help='The similaritie measures avaliable to compute the measure')
+                    help='The similaritie measures avaliable to compute the measure')"""
+parser.add_argument('--similarity', nargs='+', dest='similarity', default=['hellinger_similarity','levenshtein'])                    
 
 parser.add_argument('-g', '--ground_truth',
                     metavar='ground_truth',
@@ -199,7 +206,7 @@ if os.path.isdir(query_image_path):
                     except museum.FileIsNotImageError:
                         continue
                     if len(weights) > 1:
-                        result = weight_results(result, weights)
+                        result = weight_results_and_normalize_metrics(result, weights)
                     result.sort(key=lambda x: x[1])  # resulting score sorted
                     result = result[:k]  # take the k elements
                     # For eache element, get only the image and forget about the actual similarity value

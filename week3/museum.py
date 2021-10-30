@@ -20,7 +20,7 @@ class Museum(object):
     extrat its feature descriptors.
     """
 
-    def __init__(self, data_set_path: str, descriptor:callable, similarity_mode: str ="L1_norm", rm_frame:bool = False, rm_noise:bool = False):
+    def __init__(self, data_set_path: str, descriptor:callable, similarity_mode: list, rm_frame:bool = False, rm_noise:bool = False):
         """[summary]
 
         Args:
@@ -31,8 +31,10 @@ class Museum(object):
         """
         self.rm_frame = rm_frame
         self.image_dataset = self.load_images_dataset(data_set_path)
-        self.similarity_mode = similarity_mode
+        self.similarity_mode = similarity_mode        
         self.descriptor = descriptor
+        if  not len(self.similarity_mode) == len(self.descriptor):
+            print('number of descriptors and number of similarities must be the same')
         self.rm_noise = rm_noise
         self.noise_remover = NoiseRemover()
 
@@ -85,13 +87,13 @@ class Museum(object):
                     if  not isinstance(self.descriptor, list):      
                         set_result.append(
                         self.descriptor.compute_image_similarity(
-                            self.image_dataset, self.similarity_mode,
+                            self.image_dataset, self.similarity_mode[0],
                             query_img, text_extractor_method
                         )
                     )
                     else:
                         similarities = []
-                        for descriptor in self.descriptor:
+                        for i,descriptor in enumerate(self.descriptor):
                             if isinstance(descriptor,Text):                                
                                 similarities.append(descriptor.compute_image_similarity(
                                     self.image_dataset, 'cosine_similarity',
@@ -99,7 +101,7 @@ class Museum(object):
                                 ))
                             else:
                                 similarities.append(descriptor.compute_image_similarity(
-                                    self.image_dataset,self.similarity_mode,
+                                    self.image_dataset,self.similarity_mode[i],
                                     query_img, text_extractor_method
                                 ))
 
@@ -120,22 +122,22 @@ class Museum(object):
             )"""
             if  not isinstance(self.descriptor, list):      
                 set_result = self.descriptor.compute_image_similarity(
-                self.image_dataset, self.similarity_mode, 
+                self.image_dataset, self.similarity_mode[0], 
                 query_img, text_extractor_method
             )
                     
                 return set_result    
             else:
                 similarities = []
-                for descriptor in self.descriptor:
+                for i,descriptor in enumerate(self.descriptor):
                             if isinstance(descriptor,Text):                                
                                 similarities.append(descriptor.compute_image_similarity(
-                                    self.image_dataset, 'levenshtein',
+                                    self.image_dataset, self.similarity_mode[i],
                                     query_img, text_extractor_method
                                 ))
                             else:
                                 similarities.append(descriptor.compute_image_similarity(
-                                    self.image_dataset,self.similarity_mode,
+                                    self.image_dataset,self.similarity_mode[i],
                                     query_img, text_extractor_method
                                 ))
                 #print(similarities,self.weights)
