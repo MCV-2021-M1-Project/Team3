@@ -125,7 +125,7 @@ descriptor_color = ColorDescriptor(color_space=args.metric.split(
 descriptor_texture = TextureDescriptor(color_space=args.metric.split(
     "_")[0], descriptor=args.descriptor_texture_type, scales=args.number_blocks)
 descriptor_text = Text()
-args.weights = [int(weight) for weight in args.weights]
+args.weights = [float(weight) for weight in args.weights]
 descriptor_choice = {
     "color": descriptor_color,
     "texture": descriptor_texture,
