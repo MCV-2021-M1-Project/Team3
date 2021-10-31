@@ -93,14 +93,8 @@ class Museum(object):
                     )
                     else:
                         similarities = []
-                        for i,descriptor in enumerate(self.descriptor):
-                            if isinstance(descriptor,Text):                                
-                                similarities.append(descriptor.compute_image_similarity(
-                                    self.image_dataset, 'cosine_similarity',
-                                    query_img, text_extractor_method
-                                ))
-                            else:
-                                similarities.append(descriptor.compute_image_similarity(
+                        for i,descriptor in enumerate(self.descriptor):                            
+                            similarities.append(descriptor.compute_image_similarity(
                                     self.image_dataset,self.similarity_mode[i],
                                     query_img, text_extractor_method
                                 ))
@@ -130,19 +124,14 @@ class Museum(object):
             else:
                 similarities = []
                 for i,descriptor in enumerate(self.descriptor):
-                            if isinstance(descriptor,Text):                                
-                                similarities.append(descriptor.compute_image_similarity(
-                                    self.image_dataset, self.similarity_mode[i],
-                                    query_img, text_extractor_method
-                                ))
-                            else:
-                                similarities.append(descriptor.compute_image_similarity(
+
+                    similarities.append(descriptor.compute_image_similarity(
                                     self.image_dataset,self.similarity_mode[i],
                                     query_img, text_extractor_method
                                 ))
-                #print(similarities,self.weights)
+                
                 return similarities                
-                return [sim*weight for sim,weight in zip(similarities,self.weights)]            
+                           
         
 
 

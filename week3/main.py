@@ -35,7 +35,7 @@ def weight_results_and_normalize_metrics(results, weights,normalize=True):
     assert len(weights) == len(results)
     for i in range(len(weights)):
         results[i].sort(key=lambda x: x[0])    
-    results = np.array(results)    
+    results = np.array(results)        
     if normalize:
         for i in range(1,results.shape[2]):            
             results[:,:,i] = (results[:,:,i] - np.min(results[:,:,i]))/np.ptp(results[:,:,i])            
@@ -207,6 +207,8 @@ if os.path.isdir(query_image_path):
                         continue
                     if len(weights) > 1:
                         result = weight_results_and_normalize_metrics(result, weights)
+                    else:
+                        result = result[0]    
                     print(result)    
                     result.sort(key=lambda x: x[1])  # resulting score sorted
                     result = result[:k]  # take the k elements
