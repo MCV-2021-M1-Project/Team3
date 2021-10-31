@@ -133,6 +133,7 @@ class TextureDescriptor(object):
     def lbp_histogram(self,image:np.ndarray, points:int=24, radius:float=3.0, bins:int=8, mask:np.ndarray=None) -> np.ndarray:
         # image --> grayscale --> lbp --> histogram
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        print(image)
         image = (local_binary_pattern(image, points, radius, method="uniform")).astype(np.uint8)
 
         bins = points + 2

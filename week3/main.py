@@ -93,7 +93,7 @@ parser.add_argument('-d', '--descriptor_texture_type',
                     metavar='descriptor_texture_type',
                     type=str,
                     choices=["DCT", "LBP", "HOG"],
-                    default="LBP",
+                    default="DCT",
                     help='descriptor texture type')
 
 
@@ -134,9 +134,9 @@ descriptor_texture = TextureDescriptor(color_space=args.metric.split(
 descriptor_text = Text()
 args.weights = [float(weight) for weight in args.weights]
 descriptor_choice = {
-    "color": descriptor_color,
-    "texture": descriptor_texture,
-    "text": descriptor_text,
+    "color": [descriptor_color],
+    "texture": [descriptor_texture],
+    "text": [descriptor_text],
     "mix_color_text": [descriptor_color, descriptor_text],
     "mix_color_texture": [descriptor_color, descriptor_texture],
     "mix_text_texture": [descriptor_text, descriptor_texture],
@@ -207,6 +207,7 @@ if os.path.isdir(query_image_path):
                         continue
                     if len(weights) > 1:
                         result = weight_results_and_normalize_metrics(result, weights)
+                    print(result)    
                     result.sort(key=lambda x: x[1])  # resulting score sorted
                     result = result[:k]  # take the k elements
                     # For eache element, get only the image and forget about the actual similarity value
