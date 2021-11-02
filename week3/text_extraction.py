@@ -235,7 +235,12 @@ class Text(object):
         mask = self.generate_mask(img,bbox)
         backtorgb = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
         self.improve_txbox(img,cx,cy)
-
+        #----------------------------
+        img_path = 'C:\\Users\\usuario\\Documents\\GitHub\\ABC\\CV_M1\\W3\\canvas_names.txt'
+        text_txt = text
+        txt_file = open(img_path,"a")
+        txt_file.write(text_txt+'\n')
+        #-------------------------
         if save_path is not None:
             self.save_mask(backtorgb,save_path,f)
 
@@ -248,7 +253,7 @@ class Text(object):
         self, dataset, similarity_mode, query_img, text_extractor_method
     ):
         result = []
-        _, _, text = self.text_extraction(query_img, None, None)
+
         for image in dataset.keys():
             _, distance = self.text_distance(dataset[image]["image_text"], text, similarity_mode)
             result.append([image, 1-distance])
@@ -259,8 +264,6 @@ class Text(object):
 valid_images = [".jpg"]
 path = 'C:\\Users\\usuario\\Documents\\GitHub\\ABC\\CV_M1\\W3\\QSD1'
 save_path = 'C:\\Users\\usuario\\Documents\\GitHub\\ABC\\CV_M1\\W3\\QSD1\\generated_text_masks'
-path = "datasets/qsd1_w3"
-save_path = None
 if __name__ == "__main__":
     text_id = Text()
     for f in os.listdir(path):

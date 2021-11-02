@@ -4,7 +4,6 @@ import cv2
 
 
 def compute_similarity(vector_1: np.uint8, vector_2: np.uint8,mode:str) -> float:
-
     func = switcher.get(
         mode, lambda: "Invalid similarity function, pick one between: L1_norm,L2_norm,cosine_similairty,histogram_intersection,hellinger_similarity")
     return func(vector_1, vector_2)
@@ -31,7 +30,10 @@ def histogram_intersection(vector_1: np.uint8, vector_2: np.uint8) -> np.float32
 
 
 def hellinger_similarity(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
-    return np.sqrt(np.sum((np.sqrt(vector_1) - np.sqrt(vector_2)) ** 2)) / np.sqrt(2)
+    #print(vector_1.shape,sum(vector_1>=0),vector_2.shape,sum(vector_2>=0))
+    #return np.sqrt(np.sum((np.sqrt(vector_1) - np.sqrt(vector_2)))**2) / np.sqrt(2)
+    
+    return cv2.compareHist(vector_1, vector_2, cv2.HISTCMP_HELLINGER)
 
 switcher = {
     "L1_norm": L1_norm,
