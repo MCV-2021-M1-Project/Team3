@@ -51,7 +51,7 @@ for image,coords in zip(sorted(os.listdir(path_query_set)),image_coords):
         if os.path.isfile(cropped_img):
             text_id = Text()
             #print("intersection_over_union img " + str(idx))
-            bbox ,  _, _= text_id.text_extraction(os.path.join(path_query_set, image),None,None)
+            bbox ,  _, _= text_id.text_extraction(os.path.join(cropped_img, image),None,None)
             x, y = coords[0]
             print(coords)
             bbox = [bbox[0] + x, bbox[1] + y, bbox[2] + x, bbox[3] + y] 
@@ -60,7 +60,7 @@ for image,coords in zip(sorted(os.listdir(path_query_set)),image_coords):
         if os.path.isfile(cropped_img):
             text_id = Text()
             #print("intersection_over_union img " + str(idx))
-            bbox ,  _, _= text_id.text_extraction(os.path.join(path_query_set, image),None,None)
+            bbox ,  _, _= text_id.text_extraction(os.path.join(cropped_img, image),None,None)
             print("original")
             print(bbox)
             x, y = coords[1]
