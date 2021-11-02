@@ -169,12 +169,12 @@ class TextureDescriptor(object):
         else:
             query_img_hist = self.compute_descriptor(query_img)
         for image in image_dataset.keys():
-            image_hist = self.compute_descriptor(image_dataset[image]["image_obj"])
+            #image_hist = self.compute_descriptor(image_dataset[image]["image_obj"])
             #min_size = min(image_hist.shape[0], query_img_hist.shape[0])
             #image_hist = image_hist[:min_size]
             #query_img_hist = query_img_hist[:min_size]
             sim_result = compute_similarity(
-                image_hist, query_img_hist, similarity_mode)
+                image_dataset[image]["texture_desc"], query_img_hist, similarity_mode)
             result.append([image, sim_result])
         return result
 
