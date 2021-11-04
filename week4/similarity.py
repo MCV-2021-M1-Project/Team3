@@ -40,7 +40,7 @@ def sift_similarity(vector_1: np.uint8, vector_2: np.uint8):
     bf = cv2.BFMatcher(cv2.NORM_L1, crossCheck=True)
 
     matches = bf.match(vector_1, vector_2)
-    return len([match for match in matches if match.distance > 0.1 ])
+    return len([match for match in matches if match.distance < 0.1 ])
 
 switcher = {
     "L1_norm": L1_norm,
