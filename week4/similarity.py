@@ -35,7 +35,7 @@ def hellinger_similarity(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
     
     return cv2.compareHist(vector_1, vector_2, cv2.HISTCMP_HELLINGER)
 
-def sift_similarity(vector_1: np.uint8, vector_2: np.uint8):
+def keypoint_similarity(vector_1: np.uint8, vector_2: np.uint8):
             #feature matching
     bf = cv2.BFMatcher(cv2.NORM_L1, crossCheck=True)
 
@@ -49,7 +49,7 @@ switcher = {
     "cosine_similarity": cosine_similarity,
     "histogram_intersection": histogram_intersection,
     "hellinger_similarity": hellinger_similarity,
-    "sift_similarity": sift_similarity
+    "keypoint_similarity": keypoint_similarity
 }
 
 if __name__ == "__main__":

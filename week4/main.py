@@ -10,6 +10,7 @@ from background_remover import Canvas
 from text_extraction import Text
 from color_descriptor import ColorDescriptor
 from texture_descriptor import TextureDescriptor
+from keypoint_descriptor import KeypointDescriptor
 
 CANVAS_TMP_FOLDER = "canvas_tmp_folder"
 CANVAS_TMP_FOLDER_CROPPED = "canvas_tmp_folder_cropped"
@@ -65,7 +66,7 @@ parser.add_argument('--descriptor',
                     metavar='descriptor',
                     type=str,
                     choices=["color", "texture", "text", "mix", "mix_color_text",
-                             "mix_color_texture", "mix_text_texture", "mix_text_texture_color"],
+                             "mix_color_texture", "mix_text_texture", "mix_text_texture_color","keypoint"],
                     help='The similaritie measures avaliable to compute the measure')
 
 
@@ -132,11 +133,13 @@ descriptor_color = ColorDescriptor(color_space=args.metric.split(
 descriptor_texture = TextureDescriptor(color_space=args.metric.split(
     "_")[0], descriptor=args.descriptor_texture_type, scales=args.number_blocks)
 descriptor_text = Text()
+descriptor_keypoint = KeypointDescriptor()
 args.weights = [float(weight) for weight in args.weights]
 descriptor_choice = {
     "color": [descriptor_color],
     "texture": [descriptor_texture],
     "text": [descriptor_text],
+    "keypoint": [descriptor_keypoint],
     "mix_color_text": [descriptor_color, descriptor_text],
     "mix_color_texture": [descriptor_color, descriptor_texture],
     "mix_text_texture": [descriptor_text, descriptor_texture],

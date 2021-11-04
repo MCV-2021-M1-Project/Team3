@@ -4,11 +4,15 @@ import os
 from matplotlib import pyplot as plt
 from similarity import compute_similarity as compute_similarity_measure
 
-class SiftDescriptor(object):
+class KeypointDescriptor(object):
 
-    def __init__(self) -> None:
-        self.sift_descriptor = cv2.xfeatures2d.SIFT_create()
-
+    def __init__(self,descriptor_type:str = 'surf') -> None:
+        self.descriptors = {
+        ##'sift': cv2.xfeatures2d.sift_create(),
+        'surf': cv2.ORB_create()}
+        self.descriptor_type = descriptor_type
+        self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+        self.top_matches = 6
     @staticmethod
     def compute_hist_mask(image, bbox):
         if bbox is None:
@@ -33,8 +37,27 @@ class SiftDescriptor(object):
         if mask is not None:
             image = cv2.bitwise_and(image, image, mask=mask)
         
-        keypoints_2, descriptors_2 = self.sift_descriptor.detectAndCompute(image,None)
+        keypoints_2, descriptors_2 = self.descriptors[self.descriptor_type].detectAndCompute(image,None)
         return keypoints_2, descriptors_2
+    def compute_similarity(self,image_descriptor,query_image_descriptor):
+        matches = self.matcher.match(image_descriptor,query_image_descriptor)
+        matches = sorted(matches, key = lambda x:x.distance)
+        #print(matches[0].distance)
+        #print(len([match for match in matches if match.distance < 0.5]))
+        return matches,len([match for match in matches if match.distance < 100])
+        """if len(matches) == 0:
+            return len(matches)
+        #print(len(matches))
+        total_distance = 0
+        try:
+            for i in range(self.top_matches):
+                total_distance += matches[i].distance
+        except:
+            #return total_distance/(i+1) 
+            #        
+        #return total_distance/self.top_matches"""    
+
+
 
     def compute_image_similarity(self, dataset, similarity_mode, query_img, text_extractor_method):
         result = []
@@ -42,9 +65,12 @@ class SiftDescriptor(object):
             bbox_query ,  _,_= text_extractor_method(query_img,None,None)
         else:
             bbox_query = None
-        _, query_img_features = self.compute_descriptor(query_img, bbox_query)
+        keypoints, query_img_features = self.compute_descriptor(query_img, bbox_query)
         for image in dataset.keys():
             #image_hist = self.compute_descriptor(dataset[image]["image_obj"])
-            sim_result = compute_similarity_measure(dataset[image]["sift_desc"], query_img_features, similarity_mode)
+            #print(dataset[image])
+            matches,sim_result = self.compute_similarity(dataset[image]["descriptor"], query_img_features)            
+            img3 = cv2.drawMatches(dataset[image]['image_obj'],dataset[image]["keypoints"],query_img,keypoints,matches[:10],None, flags=2)
+            #cv2.imwrite('/home/marcelo/Documents/Master_CV/M1/'+dataset[image]["image_name"],img3)
             result.append([image, sim_result])
         return result

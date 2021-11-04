@@ -8,7 +8,7 @@ import numpy as np
 from color_descriptor import ColorDescriptor
 from noise_remover import NoiseRemover
 from texture_descriptor import TextureDescriptor
-from sift_descriptor import SiftDescriptor
+from keypoint_descriptor import KeypointDescriptor
 VALID_IMAGE_FORMATS = ['JPEG']
 
 
@@ -50,8 +50,8 @@ class Museum(object):
                 dataset[image]["texture_desc"] = descriptor.compute_descriptor(
                     dataset[image]["image_obj"]
                 )
-            elif isinstance(descriptor,SiftDescriptor):
-                _, dataset[image]["sift_desc"] = descriptor.compute_descriptor(
+            elif isinstance(descriptor,KeypointDescriptor):
+                dataset[image]["keypoints"], dataset[image]["descriptor"] = descriptor.compute_descriptor(
                     dataset[image]["image_obj"]
                 )
 
@@ -82,6 +82,7 @@ class Museum(object):
         return image_dataset
     
     def load_query_img(self, image_path: str):
+        print(image_path)
         if self.file_is_image(image_path):
             image = cv2.imread(image_path)
             if self.rm_frame:
@@ -95,7 +96,7 @@ class Museum(object):
         print(image_set)
         if os.path.isdir(image_set):
             for image in os.listdir(image_set):
-                try:
+                #try:
                     query_img = self.load_query_img(os.path.join(image_set,image))
                     print(image)
                     if self.rm_noise:
@@ -125,8 +126,8 @@ class Museum(object):
                      
 
 
-                except FileIsNotImageError:
-                    pass
+                #except FileIsNotImageError:
+                #    pass
         else:
             query_img = self.load_query_img(image_set) 
             """set_result = self.descriptor.compute_image_similarity(
