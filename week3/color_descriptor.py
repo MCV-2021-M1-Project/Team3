@@ -71,7 +71,7 @@ class ColorDescriptor(object):
             #cv2.imshow("Applying the Mask", masked)
             return mask.astype(np.uint8)
 
-    def compute_3d_tiled_histogram(self, channels: np.ndarray, metric:str, bbox:tuple = None):
+    def compute_descriptor(self, channels: np.ndarray, bbox:tuple = None):
         """ input_params
                 bbox: tuple containing two tuples, where first tuple is top-left coordinate of the mask
                 and second tuple in left-bottom coordinates e.g ((0,0),(250,250)), if bbox is None, it will
@@ -96,24 +96,24 @@ class ColorDescriptor(object):
                     tile_mask = mask[y:y+M,x:x+N]
                     #if there is not bbox param, we compute hist for all the tiles
                     #if bbox is None:
-                    hist = self.histogram_function_map[metric](tile, tile_mask)
+                    hist = self.histogram_function_map[self.metric](tile, tile_mask)
                     hist_scale.extend(hist)
 
             histogram.extend(np.stack(hist_scale).flatten())
 
         return np.stack(histogram).flatten() # Join the histograms and flat them in one dimension array
 
-    def compute_histogram(self, image: np.ndarray, metric: str, plot=False):
+    def compute_histogram(self, image: np.ndarray, plot=False):
         """
         Method to compute the histogram of an image
         """
 
         image = cv2.cvtColor(image, self.color_space_map[self.color_space])
         
-        if not "3d" in metric:
+        if not "3d" in self.metric:
             image = cv2.split(image)
 
-        hist = self.histogram_function_map[metric](image)
+        hist = self.histogram_function_map[self.metric](image)
 
         #hist = hist.astype(np.uint8)
         if plot:
@@ -133,10 +133,10 @@ class ColorDescriptor(object):
 
     def compute_simple_image_similarity(self, dataset, similarity_mode, query_img):
         result = []
-        query_img_hist = self.compute_histogram(query_img, metric=self.metric)
+        query_img_hist = self.compute_histogram(query_img)
         for image in dataset.keys():
-            image_hist = self.compute_histogram(dataset[image]["image_obj"], metric=self.metric)
-            sim_result = compute_similarity_measure(image_hist, query_img_hist,similarity_mode)
+            #image_hist = self.compute_histogram(dataset[image]["image_obj"], metric=self.metric)
+            sim_result = compute_similarity_measure(dataset[image]["color_desc"], query_img_hist,similarity_mode)
             result.append([image, sim_result])
         return result
 
@@ -146,9 +146,9 @@ class ColorDescriptor(object):
             bbox_query ,  _,_= text_extractor_method(query_img,None,None)
         else:
             bbox_query = None
-        query_img_hist = self.compute_3d_tiled_histogram(query_img, self.metric, bbox_query)
+        query_img_hist = self.compute_descriptor(query_img, bbox_query)
         for image in dataset.keys():
-            image_hist = self.compute_3d_tiled_histogram(dataset[image]["image_obj"], metric=self.metric)
-            sim_result = compute_similarity_measure(image_hist, query_img_hist, similarity_mode)
+            #image_hist = self.compute_descriptor(dataset[image]["image_obj"])
+            sim_result = compute_similarity_measure(dataset[image]["color_desc"], query_img_hist, similarity_mode)
             result.append([image, sim_result])
         return result

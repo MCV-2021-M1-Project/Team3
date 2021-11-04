@@ -130,6 +130,7 @@ class TextureDescriptor(object):
 
         # Join the histograms and flat them in one dimension array
         return np.stack(histogram).flatten()
+
     def lbp_histogram(self,image:np.ndarray, points:int=8, radius:int=3, bins:int=8, mask:np.ndarray=None) -> np.ndarray:
         # image --> grayscale --> lbp --> histogram
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -143,6 +144,7 @@ class TextureDescriptor(object):
         
         hist = cv2.normalize(hist, hist)
         return hist.flatten()
+
     def dct_coefficients(self,image:np.ndarray, mask:np.ndarray=None, num_coeff:int=8,num_blocks=6) -> np.ndarray:
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -157,6 +159,7 @@ class TextureDescriptor(object):
         
         features = _compute_zig_zag(block_dct[:num_blocks,:num_blocks])[:num_coeff]
         return features
+
     def compute_image_similarity(self, image_dataset, similarity_mode, query_img, text_extractor_method: callable):
         result = []
         print()
@@ -169,12 +172,12 @@ class TextureDescriptor(object):
         else:
             query_img_hist = self.compute_descriptor(query_img)
         for image in image_dataset.keys():
-            image_hist = self.compute_descriptor(image_dataset[image]["image_obj"])
+            #image_hist = self.compute_descriptor(image_dataset[image]["image_obj"])
             #min_size = min(image_hist.shape[0], query_img_hist.shape[0])
             #image_hist = image_hist[:min_size]
             #query_img_hist = query_img_hist[:min_size]
             sim_result = compute_similarity(
-                image_hist, query_img_hist, similarity_mode)
+                image_dataset[image]["texture_desc"], query_img_hist, similarity_mode)
             result.append([image, sim_result])
         return result
 

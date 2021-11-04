@@ -253,7 +253,7 @@ class Text(object):
         self, dataset, similarity_mode, query_img, text_extractor_method
     ):
         result = []
-
+        _, _, text = self.text_extraction(query_img, None, None)
         for image in dataset.keys():
             _, distance = self.text_distance(dataset[image]["image_text"], text, similarity_mode)
             result.append([image, 1-distance])

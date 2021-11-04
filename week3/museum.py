@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from color_descriptor import ColorDescriptor
 from noise_remover import NoiseRemover
+from texture_descriptor import TextureDescriptor
 VALID_IMAGE_FORMATS = ['JPEG']
 
 
@@ -30,13 +31,24 @@ class Museum(object):
             rm_frame (bool, optional): [description]. Defaults to False.
         """
         self.rm_frame = rm_frame
+        self.descriptor = descriptor
         self.image_dataset = self.load_images_dataset(data_set_path)
         self.similarity_mode = similarity_mode        
-        self.descriptor = descriptor
         if  not len(self.similarity_mode) == len(self.descriptor):
             print('number of descriptors and number of similarities must be the same')
         self.rm_noise = rm_noise
         self.noise_remover = NoiseRemover()
+
+    def compute_descriptor_for_dataset(self, dataset, image):
+        for descriptor in self.descriptor:
+            if isinstance(descriptor,ColorDescriptor):
+                dataset[image]["color_desc"] = descriptor.compute_descriptor(
+                    dataset[image]["image_obj"]
+                )
+            elif isinstance(descriptor,TextureDescriptor):
+                dataset[image]["texture_desc"] = descriptor.compute_descriptor(
+                    dataset[image]["image_obj"]
+                )
 
     def extract_text_from_files(self, text_path):
         #print(text_path)
@@ -61,6 +73,7 @@ class Museum(object):
                     "image_obj": image,
                     "image_text": image_text
                 }
+                self.compute_descriptor_for_dataset(image_dataset, image_num)
         return image_dataset
     
     def load_query_img(self, image_path: str):
