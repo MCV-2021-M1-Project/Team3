@@ -33,8 +33,8 @@ class SiftDescriptor(object):
         if mask is not None:
             image = cv2.bitwise_and(image, image, mask=mask)
         
-        keypoints_2, descriptors_2 = self.sift_descriptor.detectAndCompute(image,None)
-        return keypoints_2, descriptors_2
+        keypoints, descriptors = self.sift_descriptor.detectAndCompute(image,None)
+        return keypoints, descriptors
 
     def compute_image_similarity(self, dataset, similarity_mode, query_img, text_extractor_method):
         result = []
@@ -42,7 +42,7 @@ class SiftDescriptor(object):
             bbox_query ,  _,_= text_extractor_method(query_img,None,None)
         else:
             bbox_query = None
-        _, query_img_features = self.compute_descriptor(query_img, bbox_query)
+        _, query_img_features = self.compute_descriptor(query_img, None)
         for image in dataset.keys():
             #image_hist = self.compute_descriptor(dataset[image]["image_obj"])
             sim_result = compute_similarity_measure(dataset[image]["sift_desc"], query_img_features, similarity_mode)
