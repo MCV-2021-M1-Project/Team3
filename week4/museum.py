@@ -8,6 +8,7 @@ import numpy as np
 from color_descriptor import ColorDescriptor
 from noise_remover import NoiseRemover
 from texture_descriptor import TextureDescriptor
+from sift_descriptor import SiftDescriptor
 VALID_IMAGE_FORMATS = ['JPEG']
 
 
@@ -47,6 +48,10 @@ class Museum(object):
                 )
             elif isinstance(descriptor,TextureDescriptor):
                 dataset[image]["texture_desc"] = descriptor.compute_descriptor(
+                    dataset[image]["image_obj"]
+                )
+            elif isinstance(descriptor,SiftDescriptor):
+                _, dataset[image]["sift_desc"] = descriptor.compute_descriptor(
                     dataset[image]["image_obj"]
                 )
 
