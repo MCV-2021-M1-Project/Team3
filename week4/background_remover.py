@@ -276,16 +276,67 @@ class Canvas(object):
             #cv.imwrite(filename, croped_img)
             #print('Successfully generated and saved',filename)
 
+    def compute_edges(self, img, sigma=0.23):
+        median = np.median(img)
+        # apply automatic Canny edge detection using the computed median
+        lower = int(max(0, (1.0 - sigma) * median))
+        upper = int(min(255, (1.0 + sigma) * median))
+        edged = cv.Canny(img, lower, upper)
+        # return the edged image
+        return edged
+
+    def compute_background(self, img):
+        # get a blank canvas for drawing contour on and convert img to grayscale
+        canvas = np.zeros(img.shape, np.uint8)
+        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+
+        blurred = cv.GaussianBlur(gray, (3, 3), 0) #remove high frequency feature
+        # apply Canny edge detection using a wide threshold, tight
+        # threshold, and automatically determined threshold
+        edges = self.compute_edges(blurred)
+        kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE,(9,9))
+        edges = cv.dilate(edges, kernel)
+        print(edges)
+        im2,contours,hierarchy = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+        # find the main island (biggest area)
+        contours = sorted(contours, key=cv.contourArea, reverse=True)
+
+        for cnt in contours[:3]:
+            img_to_draw = img.copy()
+            max_area = cv.contourArea(cnt)
+            print(max_area)
+            # define main island contour approx. and hull
+            #print(approx)
+            # show the images
+            if max_area > 100000:
+                epsilon = 0.01*cv.arcLength(cnt,True)
+                approx = cv.approxPolyDP(cnt,epsilon,True)
+                #cv.imshow("Original", img)
+                #cv.waitKey(0)
+                #cv.drawContours(img_to_draw, cnt, -1, (0, 255, 0), 3)
+                cv.drawContours(img_to_draw, approx, -1, (0, 0, 255), 3)
+                #cv.drawContours(canvas, approx, -1, (0, 0, 255), 3)
+                # cv.drawContours(canvas, hull, -1, (0, 0, 255), 3) # only displays a few points as well.
+                title ="Display frame"
+                cv.namedWindow( title, cv.WINDOW_AUTOSIZE)
+                #cv.resizeWindow("Display frame", 500, 500)
+                cv.namedWindow(title)
+                cv.moveWindow(title, 0, 0)
+                cv.imshow(title, cv.resize(img_to_draw, (960, 540)) )
+                cv.waitKey(0)
+                cv.destroyAllWindows()
+
 
     def background_remover(self,path,save_path,save_path_croped,f):
         img = self.input_image(path)
-        simplifyed_img, histogram, result = self.simplify_irrelevant(img)
-        objects_img, mask = self.make_bin_and_objects(simplifyed_img)
-        connected_img,cx,cy,x,y,w,h,x2,y2,w2,h2 = self.connected_componets2(objects_img)
-        final_mask = self.gray2rgb(connected_img)
-        self.save_mask(final_mask,mask,img,cx,cy,save_path,f)
-        self.crop_image(img,save_path_croped,x,y,w,h,x2,y2,w2,h2,f)
-        return final_mask,x,y,w,h,x2,y2,w2,h2
+        self.compute_background(img)
+        #simplifyed_img, histogram, result = self.simplify_irrelevant(img)
+        #objects_img, mask = self.make_bin_and_objects(simplifyed_img)
+        #connected_img,cx,cy,x,y,w,h,x2,y2,w2,h2 = self.connected_componets2(objects_img)
+        #final_mask = self.gray2rgb(connected_img)
+        #self.save_mask(final_mask,mask,img,cx,cy,save_path,f)
+        #self.crop_image(img,save_path_croped,x,y,w,h,x2,y2,w2,h2,f)
+        #return final_mask,x,y,w,h,x2,y2,w2,h2
 
 valid_images = [".jpg"]
 load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\'
@@ -297,12 +348,14 @@ save_directory_croped = 'datasets/qsd2_w2/croped'
 if __name__ == "__main__":
 
     museum = Canvas()
-    for f in os.listdir(load_directory):        
+    for f in sorted(os.listdir(load_directory)):        
         ##print(f)
         file_name = typex = os.path.splitext(f)[0]
         typex = os.path.splitext(f)[1]
         ##print(typex)
         if typex.lower() not in valid_images:
             continue
-        _,x,y,w,h,x2,y2,w2,h2 = museum.background_remover(load_directory + f,save_direcory,save_directory_croped ,file_name)
-        print(_,x,y,w,h,x2,y2,w2,h2)
+        print(f)
+#        _,x,y,w,h,x2,y2,w2,h2 = museum.background_remover(load_directory + f,save_direcory,save_directory_croped ,file_name)
+        museum.background_remover(load_directory + f,save_direcory,save_directory_croped ,file_name)
+        #print(_,x,y,w,h,x2,y2,w2,h2)
