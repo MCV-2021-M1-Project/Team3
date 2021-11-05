@@ -10,7 +10,7 @@ from noise_remover import NoiseRemover
 
 MIN_AREA_IMG_RATIO = 1/12
 MAX_N_FRAMES = 3
-debug=True
+debug=False
 
 class Canvas(object):
 
