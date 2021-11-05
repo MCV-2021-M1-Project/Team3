@@ -175,11 +175,11 @@ if args.rm_background:
         is_img = museum.Museum.file_is_image(
             os.path.join(query_image_path, image))
         if is_img:
-            _, x, y, w, h, x2, y2, w2, h2 = canvas.background_remover(os.path.join(query_image_path, image), os.path.join(
+            temp_list = []
+            _, frames_pos = canvas.background_remover(os.path.join(query_image_path, image), os.path.join(
                 os.getcwd(), CANVAS_TMP_FOLDER), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER_CROPPED), image)
-            temp_list = [(x, y)]
-            if x2 > 0:
-                temp_list.append((x2, y2))
+            for frame in frames_pos:
+                temp_list.append((frame[0], frame[1]))
             list_of_coords.append(temp_list)
     results.create_results(list_of_coords, file_path=os.path.join(
         query_image_path, "coordinates_mask_original_image.pkl"))
