@@ -289,7 +289,7 @@ class Canvas(object):
         for idx, frame in enumerate(frames_pos):
             x,y,w,h = frame
             croped_img = img[y:y+h, x:x+w]
-            filename = 'crop_'+file_name+ '_' + str(idx) + '.jpg'
+            filename = 'crop_'+file_name+ '_' + str(idx+1) + '.jpg'
             file_path = os.path.join(save_directory_croped, filename)
             cv.imwrite(file_path, croped_img)
             #cv.imwrite(filename, croped_img)

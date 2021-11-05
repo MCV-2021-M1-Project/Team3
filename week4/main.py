@@ -189,8 +189,11 @@ final_result = []
 if os.path.isdir(query_image_path):
     for original_image in sorted(os.listdir(query_image_path)):
         if museum_similarity_comparator.file_is_image(os.path.join(query_image_path, original_image)):
-            image_set = ["crop_{}.jpg".format(original_image.split(".")[0]), "crop_{}_2.jpg".format(
-                original_image.split(".")[0])] if args.rm_background else [original_image]
+            image_set = [
+                "crop_{}_1.jpg".format(original_image.split(".")[0]), 
+                "crop_{}_2.jpg".format(original_image.split(".")[0]),
+                "crop_{}_3.jpg".format(original_image.split(".")[0])
+            ] if args.rm_background else [original_image]
             img_path = CANVAS_TMP_FOLDER_CROPPED if args.rm_background else query_image_path
             img_set_res = []
             for image in image_set:
