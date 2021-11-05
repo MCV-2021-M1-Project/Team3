@@ -10,7 +10,7 @@ from noise_remover import NoiseRemover
 
 MIN_AREA_IMG_RATIO = 1/12
 MAX_N_FRAMES = 3
-debug=False
+debug=True
 
 class Canvas(object):
 
@@ -362,6 +362,9 @@ class Canvas(object):
             cv.imshow(title, cv.resize(canvas, (960, 540)) )
             cv.waitKey(0)
             cv.destroyAllWindows()
+        # If no detected frame we will take all the image
+        if len(resulting_frame_pos) < 1:
+            resulting_frame_pos.append([0, 0, img.shape[1], img.shape[0]])
         return resulting_frame_pos, canvas
 
     def background_remover(self,path,save_path,save_path_croped,f):
