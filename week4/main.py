@@ -211,8 +211,9 @@ if os.path.isdir(query_image_path):
                     if len(weights) > 1:
                         result = weight_results_and_normalize_metrics(result, weights)
                     else:
+                        #print(result)
                         result = result[0]    
-                    result.sort(key=lambda x: x[1])  # resulting score sorted
+                    result.sort(key=lambda x: x[1],reverse=True)  # resulting score sorted
                     result = result[:k]  # take the k elements
                     # For eache element, get only the image and forget about the actual similarity value
                     result = [key for key, val in result]
