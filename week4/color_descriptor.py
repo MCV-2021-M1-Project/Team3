@@ -143,7 +143,7 @@ class ColorDescriptor(object):
     def compute_image_multiscale_similarity(self, dataset, similarity_mode, query_img , text_extractor_method: callable):
         result = []
         if text_extractor_method is not None:
-            bbox_query ,  _,_= text_extractor_method(query_img,None,None)
+            bbox_query , _, _, _, _= text_extractor_method(query_img,None,None)
         else:
             bbox_query = None
         query_img_hist = self.compute_descriptor(query_img, bbox_query)

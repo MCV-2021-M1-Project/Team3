@@ -8,6 +8,7 @@ import numpy as np
 from color_descriptor import ColorDescriptor
 from noise_remover import NoiseRemover
 from texture_descriptor import TextureDescriptor
+from keypoint_descriptor import KeypointDescriptor
 VALID_IMAGE_FORMATS = ['JPEG']
 
 
@@ -49,6 +50,10 @@ class Museum(object):
                 dataset[image]["texture_desc"] = descriptor.compute_descriptor(
                     dataset[image]["image_obj"]
                 )
+            elif isinstance(descriptor,KeypointDescriptor):
+                dataset[image]["keypoints"], dataset[image]["descriptor"] = descriptor.compute_descriptor(
+                    dataset[image]["image_obj"]
+                )
 
     def extract_text_from_files(self, text_path):
         #print(text_path)
@@ -87,9 +92,10 @@ class Museum(object):
     
     def compute_similarity(self, image_set:str, text_extractor_method:callable):
         set_result = []
+        print(image_set)
         if os.path.isdir(image_set):
             for image in os.listdir(image_set):
-                try:
+                #try:
                     query_img = self.load_query_img(os.path.join(image_set,image))
                     print(image)
                     if self.rm_noise:
@@ -119,8 +125,8 @@ class Museum(object):
                      
 
 
-                except FileIsNotImageError:
-                    pass
+                #except FileIsNotImageError:
+                #    pass
         else:
             query_img = self.load_query_img(image_set) 
             """set_result = self.descriptor.compute_image_similarity(

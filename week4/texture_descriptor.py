@@ -164,7 +164,7 @@ class TextureDescriptor(object):
         result = []
         print()
         if text_extractor_method is not None:
-            bbox_query,  _, _ = text_extractor_method(query_img, None, None)
+            bbox_query,  _, _, _, _ = text_extractor_method(query_img, None, None)
             #if bbox_query and self.descriptor != 'color_histogram':
             #    print('Only can use bbox with color histogram!!')
             #    exit()

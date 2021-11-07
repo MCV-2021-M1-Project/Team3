@@ -135,7 +135,6 @@ class Canvas(object):
         y2 = -1
         w2 = -1
         h2 = -1
-
         max_h_index2 = None
         output = cv.connectedComponentsWithStats(
             nogaps, 4, cv.CV_32S
@@ -240,8 +239,7 @@ class Canvas(object):
         cx = int(centroids[max_h_index][0])
         cy = int(centroids[max_h_index][1])
         #print('Centroids: X:',cx,'Y:',cy)
-        cv.imshow("",cv.cvtColor(backtorgb_mid, cv.COLOR_BGR2RGB))
-        cv.waitKey(0)
+        #plt.imshow(cv.cvtColor(backtorgb_mid, cv.COLOR_BGR2RGB))
         #if x2 < x and max_h_index2 is not None:
         #    return nogaps,cx,cy,x2,y2,w2,h2,x,y,w,h
         return nogaps,cx,cy,x,y,w,h,x2,y2,w2,h2

@@ -87,6 +87,7 @@ class Museum(object):
     
     def compute_similarity(self, image_set:str, text_extractor_method:callable):
         set_result = []
+        print(image_set)
         if os.path.isdir(image_set):
             for image in os.listdir(image_set):
                 try:

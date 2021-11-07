@@ -35,12 +35,21 @@ def hellinger_similarity(vector_1: np.uint8, vector_2: np.uint8) -> np.float32:
     
     return cv2.compareHist(vector_1, vector_2, cv2.HISTCMP_HELLINGER)
 
+def keypoint_similarity(vector_1: np.uint8, vector_2: np.uint8):
+            #feature matching
+    bf = cv2.BFMatcher(cv2.NORM_L1, crossCheck=True)
+
+    matches = bf.match(vector_1, vector_2)
+    matches = sorted(matches, key = lambda x:x.distance)
+    return matches
+
 switcher = {
     "L1_norm": L1_norm,
     "L2_norm": L2_norm,
     "cosine_similarity": cosine_similarity,
     "histogram_intersection": histogram_intersection,
     "hellinger_similarity": hellinger_similarity,
+    "keypoint_similarity": keypoint_similarity
 }
 
 if __name__ == "__main__":
