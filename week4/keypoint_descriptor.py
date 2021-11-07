@@ -64,7 +64,7 @@ class KeypointDescriptor(object):
     def compute_image_similarity(self, dataset, similarity_mode, query_img, text_extractor_method):
         result = []
         if text_extractor_method is not None:
-            bbox_query ,  _,_= text_extractor_method(query_img,None,None)
+            bbox_query,  _, _, _, _= text_extractor_method(query_img,None,None)
         else:
             bbox_query = None
         keypoints, query_img_features = self.compute_descriptor(query_img, bbox_query)
