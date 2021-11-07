@@ -7,7 +7,7 @@ import museum
 import results
 from mapk import mapk
 from background_remover import Canvas
-from text_extraction import Text
+from text_remover import Text
 from color_descriptor import ColorDescriptor
 from texture_descriptor import TextureDescriptor
 
@@ -156,10 +156,8 @@ museum_similarity_comparator = museum.Museum(
     args.museum_images_path, descriptor_choice[args.descriptor], similarity_mode=args.similarity, rm_frame=True, rm_noise=args.rm_noise,
 )
 
-
 canvas = Canvas()
-text_extractor = Text()
-
+descriptor_text.load_bg_dataset_txt(museum_similarity_comparator.image_dataset)
 query_image_path = args.query_image_path
 if args.rm_background:
     CANVAS_TMP_FOLDER = os.path.join(query_image_path, CANVAS_TMP_FOLDER)
@@ -198,7 +196,7 @@ if os.path.isdir(query_image_path):
                     try:
                         # working multiscale
                         result = museum_similarity_comparator.compute_similarity(
-                            os.path.join(img_path, image), text_extractor_method=text_extractor.text_extraction
+                            os.path.join(img_path, image), text_extractor_method=descriptor_text.text_extraction
                         )
                         #print(result)
                         # working at given image size
@@ -226,7 +224,7 @@ if os.path.isdir(query_image_path):
 else:
     # working multiscale
     result = museum_similarity_comparator.compute_similarity(
-        query_image_path, text_extractor_method=text_extractor.text_extraction
+        query_image_path, text_extractor_method=descriptor_text.text_extraction
     )
     # working at given image size
     #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)

@@ -8,13 +8,13 @@ import string
 import re
 import textdistance
 import random
-import pandas as pd
+#import pandas as pd
 import sys
 from tqdm import tqdm
 from math import exp
 from noise_remover import NoiseRemover
 
-pd.options.display.max_rows = 4000
+#pd.options.display.max_rows = 4000
 #pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\usuario\AppData\\Local\\Tesseract-OCR\\tesseract'
 if sys.platform == 'win32':
     pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract'
@@ -268,9 +268,9 @@ class Text(object):
 
         img_sum = cv2.cvtColor(img_sum, cv2.COLOR_BGR2GRAY)
         ret,img_sum = cv2.threshold(img_sum,127,255,0)
-        plt.imshow(cv2.cvtColor(img_sum, cv2.COLOR_BGR2RGB))
+        #plt.imshow(img_sum)
         img_sum = cv2.morphologyEx(img_sum, cv2.MORPH_OPEN, kernelPen)
-        cnts,hier = cv2.findContours(img_sum, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        _, cnts,hier = cv2.findContours(img_sum, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         text1 = ''
         text2 = ''
         bbox = [x1,y1,w1,h1]
@@ -281,8 +281,10 @@ class Text(object):
             bbox = [x1,y1,w1,h1]
             cv2.rectangle(img_sum, (x, y), (x + w - 1, y + h - 1), 255, 2)
             img_sum = self.augm_coords(crop_text,x,y,x+w,y + h,0.03,0.06)
+            #plt.imshow(img_sum)
             img_sum = cv2.cvtColor(img_sum, cv2.COLOR_BGR2GRAY)
             (T, img_sum) = cv2.threshold(img_sum, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+            #plt.imshow(img_sum)
             text1 = pytesseract.image_to_string(img_sum,config = '--psm 7 -c tessedit_char_whitelist= abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
             text2 = self.filter_text(img_sum)
             if 1 == 0: 
@@ -379,14 +381,22 @@ class Text(object):
             result.append([image, 1-distance])
         return result
 
-    def compute_image_similarity(self,dataset, similarity_mode, query_img,BBDD_GT_Dataset,file_name,txt_save_path, text_extractor_method):
+    def load_bg_dataset_txt(self, dataset):
+        self.BBDD_GT_Dataset = []
+        for image in dataset.keys():
+            BBDD_GT_Names = dataset[image]["image_text"].split(',')
+            for Names_GT in BBDD_GT_Names:
+                Names_GT_Net = Names_GT.translate({ ord(c): None for c in "')(\n" })
+                self.BBDD_GT_Dataset.append(Names_GT_Net)
+
+    def compute_image_similarity2(self,dataset, similarity_mode, query_img, text_extractor_method, file_name =None, txt_save_path=None):
         text,text1,text2 = self.text_extraction(query_img, None, None)
         textS=[text,text1,text2]
         dist_obt1 = 0
         text_obt1 = ''
 
         for tex in textS:
-            for ground_T in BBDD_GT_Dataset:
+            for ground_T in self.BBDD_GT_Dataset:
                 dist,dist1 = text_id.text_distance(ground_T,tex)
 
                 if dist1>dist_obt1:
@@ -405,7 +415,7 @@ class Text(object):
         return result
 
     def generate_txt(self,text_obt1,file_name,txt_save_path): #file_name: 00000.jpg or 00000_2.jpg
-        file_name = file_name[:5]
+        file_name = file_name[5:-2]
         txt_save_path = txt_save_path +'/'+ file_name + '.txt'
         if sys.platform == 'win32':
             txt_save_path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1\\txt\\'+file_name+'.txt'
@@ -422,7 +432,9 @@ path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1'
 path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1'
 save_path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1\\generated_text_masks2'
 path_dataset = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\data\\BBDD'
-
+path_dataset = "datasets/BBDD"
+path = "datasets/qsd1_w4/canvas_tmp_folder_cropped"
+save_path = 'datasets/qsd1_w4/generated_text_masks2'
 
 if __name__ == "__main__":
     x = 0
@@ -430,9 +442,9 @@ if __name__ == "__main__":
     text_id = Text()
     #------------------------- Cargar Dataset BBDD_txt------------
     BBDD_GT_Dataset = []
-    os.chdir(path_dataset)
+    #os.chdir(path_dataset)
     for BBDD_GT in tqdm(os.listdir(path_dataset)):
-        GT_txt_path = os.path.join(BBDD_GT)
+        GT_txt_path = os.path.join(path_dataset, BBDD_GT)
         file_name_txt = typex_txt = os.path.splitext(BBDD_GT)[0]
         typex_txt = os.path.splitext(BBDD_GT)[1]
         if typex_txt.lower() not in valid_text:
@@ -444,7 +456,7 @@ if __name__ == "__main__":
                 BBDD_GT_Dataset.append(Names_GT_Net)
     #------------------------------------------------------------
     #print(BBDD_GT_Dataset)
-    os.chdir(path)
+    #os.chdir(path)
 
     for f in tqdm(os.listdir(path)):
         
@@ -459,7 +471,7 @@ if __name__ == "__main__":
         if typex.lower() not in valid_images:
             continue
         path_in = os.path.join(path, f)
-        print('F:',f)
+        print('F:',path_in)
         #print(path_in)
         img = text_id.input_image(path_in)
         bbox,mask,text,text1,text2 = text_id.text_extraction(img,save_path,file_name)
@@ -483,8 +495,9 @@ if __name__ == "__main__":
         print('DISTANCE:', dist_obt1,'---->',text_obt1)
         #------------------------------------------
         #----------------------------
-        file_name = file_name[:5]
-        img_path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1\\txt\\'+file_name+'.txt'
+        file_name = file_name[5:-2]
+        print(file_name)
+        img_path = 'datasets/qsd1_w4/txt/'+file_name+'.txt'
         txt_file = open(img_path,'a')
         txt_file.write(text_obt1+'\n')
         print('Successfully TXT generated and saved',file_name+'.txt at:',img_path)
