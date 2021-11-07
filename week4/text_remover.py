@@ -78,6 +78,20 @@ class Text(object):
         img_sum = img_TH + img_BH
         return (cv2.cvtColor(img_sum, cv2.COLOR_BGR2GRAY) != 0).astype(np.uint8)
 
+    def sub_process(self,sum2):
+
+        (T, threshInv) = cv2.threshold(sum2, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        w=img.shape[1]
+        h=img.shape[0]
+        a = round(h/100)
+        b = round(w/70)
+        a1 = round(h/150)
+        b1 = round(w/120)
+        kernel = np.ones((a,b),np.uint8)
+        kernel1 = np.ones((a1,b1),np.uint8)
+        opening = cv2.morphologyEx(threshInv, cv2.MORPH_OPEN, kernel)
+
+        return opening,threshInv
     def search_elements(self,img,threshInv):
         output = cv2.connectedComponentsWithStats(
             threshInv, 4, cv2.CV_32S)
@@ -331,42 +345,26 @@ class Text(object):
         return text_final
 
     def text_distance(self,text_1, text_2, alg='levenshtein'):
-
         if text_1 is None or text_2 is None:
             return 1.0
         distance1 = TEXT_SIMILARITIES_ALG[alg](text_1, text_2)
-        distance = 1 / (1 + exp(-50*(distance1-0.05)))
-        return 1 - distance,distance1
+        distance = 1 - distance1
+        return distance,distance1
+
 
     def text_extraction(self,img,save_path,f):
         img = self.remove_noise(img)
-        plt.imshow(img)
-
         sum2 = self.pre_process(img)
-        (T, threshInv) = cv2.threshold(sum2, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-        w=img.shape[1]
-        h=img.shape[0]
-        a = round(h/100)
-        b = round(w/70)
-        a1 = round(h/150)
-        b1 = round(w/120)
-        kernel = np.ones((a,b),np.uint8)
-        kernel1 = np.ones((a1,b1),np.uint8)
-
-        opening = cv2.morphologyEx(threshInv, cv2.MORPH_OPEN, kernel)
-        
+        opening,threshInv = self.sub_process(sum2)
         bbox,x1,y1,w1,h1,cx,cy = self.search_elements(img,opening)
         backtorgb = self.gray2rgb(threshInv)
         text,text1,text2,bbox = self.analize_text(img,x1,y1,w1,h1,save_path,f)
         mask = self.generate_mask(img,bbox)
         backtorgb = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
         self.improve_txbox(img,cx,cy)
-
         if save_path is not None:
             self.save_mask(backtorgb,save_path,f)
-
         bbox[2],bbox[3] = bbox[0]+bbox[2],bbox[1]+bbox[3]
-
         ###print('BBOX: ',bbox)
         ###print('---------------------------------------------------------')
         return bbox,mask,text,text1,text2
@@ -402,15 +400,18 @@ class Text(object):
             result.append([image, 1-distance])
         print('-----------------------------------------------------------------------------------------')
         print('DISTANCE:', dist_obt1,'---->',text_obt1,'Result:',result)
-        self.generate_txt(text_obt1,file_name,txt_save_path)
+        if txt_save_path is not None:
+            self.generate_txt(text_obt1,file_name,txt_save_path)
         return result
 
     def generate_txt(self,text_obt1,file_name,txt_save_path): #file_name: 00000.jpg or 00000_2.jpg
-        txt_save_path = os.path.join(txt_save_path,file_name)
         file_name = file_name[:5]
-        txt_save_path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1\\txt\\'+file_name+'.txt'
+        txt_save_path = txt_save_path +'/'+ file_name + '.txt'
+        if sys.platform == 'win32':
+            txt_save_path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1\\txt\\'+file_name+'.txt'
         txt_file = open(txt_save_path,'a')
         txt_file.write(text_obt1+'\n')
+        print('Successfully TXT generated and saved',file_name+'.txt at:',txt_save_path)
         print('-----------------------------------------------------------------------------------------')
         return
 
@@ -486,6 +487,7 @@ if __name__ == "__main__":
         img_path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1\\txt\\'+file_name+'.txt'
         txt_file = open(img_path,'a')
         txt_file.write(text_obt1+'\n')
+        print('Successfully TXT generated and saved',file_name+'.txt at:',img_path)
         print('-----------------------------------------------------------------------------------------')
         #-------------------------
         x += 1
