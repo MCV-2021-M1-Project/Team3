@@ -78,7 +78,7 @@ class Text(object):
         img_sum = img_TH + img_BH
         return (cv2.cvtColor(img_sum, cv2.COLOR_BGR2GRAY) != 0).astype(np.uint8)
 
-    def sub_process(self,sum2):
+    def sub_process(self,sum2, img):
 
         (T, threshInv) = cv2.threshold(sum2, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         w=img.shape[1]
@@ -357,7 +357,7 @@ class Text(object):
     def text_extraction(self,img,save_path,f):
         img = self.remove_noise(img)
         sum2 = self.pre_process(img)
-        opening,threshInv = self.sub_process(sum2)
+        opening,threshInv = self.sub_process(sum2, img)
         bbox,x1,y1,w1,h1,cx,cy = self.search_elements(img,opening)
         backtorgb = self.gray2rgb(threshInv)
         text,text1,text2,bbox = self.analize_text(img,x1,y1,w1,h1,save_path,f)
