@@ -371,7 +371,7 @@ class Text(object):
         ###print('---------------------------------------------------------')
         return bbox,mask,text,text1,text2
 
-    def compute_image_similarity(
+    def compute_image_similarity2(
         self, dataset, similarity_mode, query_img, text_extractor_method
     ):
         result = []
@@ -383,33 +383,35 @@ class Text(object):
 
     def load_bg_dataset_txt(self, dataset):
         self.BBDD_GT_Dataset = []
-        for image in dataset.keys():
+        for image in sorted(dataset.keys()):
             BBDD_GT_Names = dataset[image]["image_text"].split(',')
             for Names_GT in BBDD_GT_Names:
                 Names_GT_Net = Names_GT.translate({ ord(c): None for c in "')(\n" })
                 self.BBDD_GT_Dataset.append(Names_GT_Net)
 
-    def compute_image_similarity2(self,dataset, similarity_mode, query_img, text_extractor_method, file_name =None, txt_save_path=None):
-        text,text1,text2 = self.text_extraction(query_img, None, None)
+    def compute_image_similarity(self,dataset, similarity_mode, query_img, text_extractor_method, file_name =None, txt_save_path=None):
+        _, _, text,text1,text2 = self.text_extraction(query_img, None, None)
         textS=[text,text1,text2]
         dist_obt1 = 0
         text_obt1 = ''
 
         for tex in textS:
             for ground_T in self.BBDD_GT_Dataset:
-                dist,dist1 = text_id.text_distance(ground_T,tex)
+                dist,dist1 = self.text_distance(ground_T,tex)
 
-                if dist1>dist_obt1:
+                if (dist1>dist_obt1) and (ground_T != '') :
                     dist_obt1 = dist1
                     text_obt1 = ground_T
+                    #print('ground_T',ground_T,'dist:',dist1)
                 else:
                     dist_obt1 = dist_obt1
+
         result = []
         for image in dataset.keys():
-            _, distance = self.text_distance(dataset[image]["image_text"], dist_obt1, similarity_mode)
+            _, distance = self.text_distance(dataset[image]["image_text"], text_obt1, similarity_mode)
             result.append([image, 1-distance])
-        print('-----------------------------------------------------------------------------------------')
-        print('DISTANCE:', dist_obt1,'---->',text_obt1,'Result:',result)
+        #print('-----------------------------------------------------------------------------------------')
+        #print('DISTANCE:', dist_obt1,'---->',text_obt1,'Result:',result)
         if txt_save_path is not None:
             self.generate_txt(text_obt1,file_name,txt_save_path)
         return result
