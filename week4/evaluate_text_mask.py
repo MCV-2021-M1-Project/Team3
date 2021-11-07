@@ -67,9 +67,9 @@ if test_set == 1:
             #print("intersection_over_union img " + str(idx))
             img = text_id.input_image(os.path.join(path_query_set, image))
             if args.debug:     
-                bbox ,  _, _= text_id.text_extraction(img,DEBUG_TEXT_MASK_IMG_FOLDER,image.split(".")[0])
+                bbox , _, _, _, _= text_id.text_extraction(img,DEBUG_TEXT_MASK_IMG_FOLDER,image.split(".")[0])
             else:
-                bbox ,  _, _= text_id.text_extraction(img,None,None)
+                bbox , _, _, _, _= text_id.text_extraction(img,None,None)
             #print(list_mask_text_results[idx])
             #print(intersection_over_union(bbox, list_mask_text_results[idx]))
             #idx  = idx + 1
@@ -118,9 +118,9 @@ elif test_set == 2:
                 img = text_id.input_image(cropped_img)  
                 print(cropped_img)
                 if args.debug:    
-                    bbox ,  _, _= text_id.text_extraction(img,DEBUG_TEXT_MASK_IMG_FOLDER,image.split(".")[0])
+                    bbox , _, _, _, _= text_id.text_extraction(img,DEBUG_TEXT_MASK_IMG_FOLDER,image.split(".")[0])
                 else:
-                    bbox ,  _, _= text_id.text_extraction(img,None,None)
+                    bbox , _, _, _, _= text_id.text_extraction(img,None,None)
                 x, y = coords[0]
                 bbox = [bbox[0] + x, bbox[1] + y, bbox[2] + x, bbox[3] + y]
                 print("Finall box coordinates")
@@ -133,9 +133,24 @@ elif test_set == 2:
                 print(cropped_img)
                 img = text_id.input_image(cropped_img)
                 if args.debug:    
-                    bbox ,  _, _= text_id.text_extraction(img, DEBUG_TEXT_MASK_IMG_FOLDER, image.split(".")[0]+"_2")
+                    bbox , _, _, _, _= text_id.text_extraction(img, DEBUG_TEXT_MASK_IMG_FOLDER, image.split(".")[0]+"_2")
                 else:
-                    bbox ,  _, _= text_id.text_extraction(img,None,None)
+                    bbox , _, _, _, _= text_id.text_extraction(img,None,None)
+                x, y = coords[1]
+                bbox = [bbox[0] + x, bbox[1] + y, bbox[2] + x, bbox[3] + y] 
+                print("Finall box coordinates")
+                print(bbox)
+                partial.append(bbox)
+            cropped_img = os.path.join(path_query_set_cropped, "crop_{}_3.jpg".format(image.split(".")[0]))
+            if os.path.isfile(cropped_img):
+                text_id = Text()
+                #print("intersection_over_union img " + str(idx))
+                print(cropped_img)
+                img = text_id.input_image(cropped_img)
+                if args.debug:    
+                    bbox , _, _, _, _= text_id.text_extraction(img, DEBUG_TEXT_MASK_IMG_FOLDER, image.split(".")[0]+"_2")
+                else:
+                    bbox , _, _, _, _= text_id.text_extraction(img,None,None)
                 x, y = coords[1]
                 bbox = [bbox[0] + x, bbox[1] + y, bbox[2] + x, bbox[3] + y] 
                 print("Finall box coordinates")
