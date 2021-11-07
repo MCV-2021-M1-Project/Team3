@@ -84,7 +84,6 @@ elif test_set == 2:
 
     CANVAS_TMP_FOLDER = os.path.join(path_query_set,CANVAS_TMP_FOLDER)
     CANVAS_TMP_FOLDER_CROPPED = os.path.join(path_query_set,CANVAS_TMP_FOLDER_CROPPED)
-    """
     if os.path.isdir(CANVAS_TMP_FOLDER):
         shutil.rmtree(CANVAS_TMP_FOLDER)
         shutil.rmtree(CANVAS_TMP_FOLDER_CROPPED)
@@ -100,7 +99,7 @@ elif test_set == 2:
                 temp_list.append((frame[0], frame[1]))
             list_of_coords.append(temp_list)
     results.create_results(list_of_coords, file_path=os.path.join(path_query_set,"coordinates_mask_original_image.pkl"))
-    """
+    
     path_query_set_cropped = os.path.join(path_query_set,"canvas_tmp_folder_cropped")
     #path_query_set = "datasets/qst2_w2/test"
     result =[]
