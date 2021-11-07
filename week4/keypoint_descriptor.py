@@ -10,7 +10,8 @@ class KeypointDescriptor(object):
         self.descriptors = {
         ##'sift': cv2.xfeatures2d.sift_create(),
         'surf': cv2.ORB_create(1000),
-        'sift' : cv2.xfeatures2d.SIFT_create(nfeatures=200)}
+        'sift' : cv2.xfeatures2d.SIFT_create(nfeatures=200),
+        'orb':cv2.ORB_create()}
         self.descriptor_type = descriptor_type
         self.similarity = KeypointSimilarity()
         #self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)        
