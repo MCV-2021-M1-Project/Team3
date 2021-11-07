@@ -435,8 +435,8 @@ path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1'
 save_path = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\W4\\QSD1\\generated_text_masks2'
 path_dataset = 'C:\\Users\\user\\Documents\\GitHub\\ABC\\CV_M1\\data\\BBDD'
 path_dataset = "datasets/BBDD"
-path = "datasets/qsd1_w4/canvas_tmp_folder_cropped"
-save_path = 'datasets/qsd1_w4/generated_text_masks2'
+path = "datasets/qst1_w4/canvas_tmp_folder_cropped"
+save_path = 'datasets/qst1_w4/generated_text_masks2'
 
 if __name__ == "__main__":
     x = 0
@@ -462,7 +462,7 @@ if __name__ == "__main__":
 
     for f in tqdm(os.listdir(path)):
         
-        if x >= 50:
+        if x >= 80:
             #print('Skipped')
             continue
         #print('F:',f)
@@ -499,7 +499,7 @@ if __name__ == "__main__":
         #----------------------------
         file_name = file_name[5:-2]
         print(file_name)
-        img_path = 'datasets/qsd1_w4/txt/'+file_name+'.txt'
+        img_path = 'datasets/qst1_w4/txt/'+file_name+'.txt'
         txt_file = open(img_path,'a')
         txt_file.write(text_obt1+'\n')
         print('Successfully TXT generated and saved',file_name+'.txt at:',img_path)

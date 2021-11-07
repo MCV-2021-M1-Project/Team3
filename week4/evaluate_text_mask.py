@@ -1,7 +1,7 @@
 import results
 import os
 from museum import Museum
-from text_extraction import Text
+from text_remover import Text
 #from evaluate_masks import intersection_over_union
 import argparse
 import pickle
@@ -84,6 +84,7 @@ elif test_set == 2:
 
     CANVAS_TMP_FOLDER = os.path.join(path_query_set,CANVAS_TMP_FOLDER)
     CANVAS_TMP_FOLDER_CROPPED = os.path.join(path_query_set,CANVAS_TMP_FOLDER_CROPPED)
+    """
     if os.path.isdir(CANVAS_TMP_FOLDER):
         shutil.rmtree(CANVAS_TMP_FOLDER)
         shutil.rmtree(CANVAS_TMP_FOLDER_CROPPED)
@@ -92,13 +93,14 @@ elif test_set == 2:
     list_of_coords = []
     for image in sorted(os.listdir(path_query_set)):
         if Museum.file_is_image(os.path.join(path_query_set, image)):
-            _,x,y,w,h,x2,y2,w2,h2 = canvas.background_remover(os.path.join(path_query_set, image), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER_CROPPED) , image)
-            temp_list = [(x,y)]
-            if x2 > 0:
-                temp_list.append((x2,y2))
+            temp_list = []
+            _, frames_pos = canvas.background_remover(os.path.join(path_query_set, image), os.path.join(
+                os.getcwd(), CANVAS_TMP_FOLDER), os.path.join(os.getcwd(), CANVAS_TMP_FOLDER_CROPPED), image)
+            for frame in frames_pos:
+                temp_list.append((frame[0], frame[1]))
             list_of_coords.append(temp_list)
     results.create_results(list_of_coords, file_path=os.path.join(path_query_set,"coordinates_mask_original_image.pkl"))
-
+    """
     path_query_set_cropped = os.path.join(path_query_set,"canvas_tmp_folder_cropped")
     #path_query_set = "datasets/qst2_w2/test"
     result =[]
@@ -111,7 +113,7 @@ elif test_set == 2:
         if Museum.file_is_image(os.path.join(path_query_set, image)):
             print(image)
             partial = []
-            cropped_img = os.path.join(path_query_set_cropped, "crop_{}.jpg".format(image.split(".")[0]))
+            cropped_img = os.path.join(path_query_set_cropped, "crop_{}_1.jpg".format(image.split(".")[0]))
             if os.path.isfile(cropped_img):
                 text_id = Text()
                 #print("intersection_over_union img " + str(idx))
@@ -148,7 +150,7 @@ elif test_set == 2:
                 print(cropped_img)
                 img = text_id.input_image(cropped_img)
                 if args.debug:    
-                    bbox , _, _, _, _= text_id.text_extraction(img, DEBUG_TEXT_MASK_IMG_FOLDER, image.split(".")[0]+"_2")
+                    bbox , _, _, _, _= text_id.text_extraction(img, DEBUG_TEXT_MASK_IMG_FOLDER, image.split(".")[0]+"_3")
                 else:
                     bbox , _, _, _, _= text_id.text_extraction(img,None,None)
                 x, y = coords[1]
