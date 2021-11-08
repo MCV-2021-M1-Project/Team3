@@ -3,6 +3,7 @@ import os
 import argparse
 import shutil
 import numpy as np
+from numpy.lib.function_base import average
 import museum
 import results
 from mapk import mapk
@@ -66,7 +67,7 @@ parser.add_argument('--descriptor',
                     metavar='descriptor',
                     type=str,
                     choices=["color", "texture", "text", "mix", "mix_color_text",
-                             "mix_color_texture", "mix_text_texture", "mix_text_texture_color","keypoint"],
+                             "mix_color_texture", "mix_text_texture", "mix_text_texture_color","keypoint","mix_color_keypoint"],
                     help='The similaritie measures avaliable to compute the measure')
 
 
@@ -140,6 +141,7 @@ descriptor_choice = {
     "texture": [descriptor_texture],
     "text": [descriptor_text],
     "keypoint": [descriptor_keypoint],
+    "mix_color_keypoint": [descriptor_color, descriptor_keypoint],
     "mix_color_text": [descriptor_color, descriptor_text],
     "mix_color_texture": [descriptor_color, descriptor_texture],
     "mix_text_texture": [descriptor_text, descriptor_texture],
@@ -213,11 +215,17 @@ if os.path.isdir(query_image_path):
                         result = weight_results_and_normalize_metrics(result, weights)
                     else:
                         result = result[0]    
-                    result.sort(key=lambda x: x[1])  # resulting score sorted
+                    result.sort(key=lambda x: x[1])
+                    print(result)  # resulting score sorted
                     result = result[:k]  # take the k elements
                     # For eache element, get only the image and forget about the actual similarity value
-                    result = [key for key, val in result]
-                    img_set_res.append(result)
+                    images_id = [key for key, val in result]
+                    average_distance = [val for key, val in result]
+                    print(sum(average_distance)/len(average_distance))
+                    if average_distance[-1] == 1000 or average_distance[-1] == 1:
+                        images_id = [-1]                    
+
+                    img_set_res.append(images_id)
             final_result.append(img_set_res)
             print(final_result)
     if args.ground_truth is not None:

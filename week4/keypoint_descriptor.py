@@ -11,7 +11,7 @@ class KeypointDescriptor(object):
         ##'sift': cv2.xfeatures2d.sift_create(),
         'surf': cv2.ORB_create(1000),
         'sift' : cv2.xfeatures2d.SIFT_create(nfeatures=200),
-        'orb':cv2.ORB_create()}
+        'ORB':cv2.ORB_create(nfeatures=1200)}
         self.descriptor_type = descriptor_type
         self.similarity = KeypointSimilarity()
         #self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)        
@@ -64,7 +64,7 @@ class KeypointDescriptor(object):
     def compute_image_similarity(self, dataset, similarity_mode, query_img, text_extractor_method):
         result = []
         if text_extractor_method is not None:
-            bbox_query,  _, _, _, _= text_extractor_method(query_img,None,None)
+            bbox_query , _, _, _, _= text_extractor_method(query_img,None,None)
         else:
             bbox_query = None
         keypoints, query_img_features = self.compute_descriptor(query_img, bbox_query)

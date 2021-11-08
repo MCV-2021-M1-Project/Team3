@@ -12,7 +12,7 @@ class KeypointSimilarity(object):
             'l2': cv2.NORM_L2,
 
         }
-        self.matches_limit = 1
+        self.matches_limit = 6
         self.method = method
         self.distance = distance
 
@@ -33,7 +33,7 @@ class KeypointSimilarity(object):
         if len(matches) > self.matches_limit:
             return 1/len(matches)
         else:
-            return np.inf
+            return 10000
 
     def bruteforce_matching(self, vector_1, vector_2, distance):
         bf = cv2.BFMatcher(normType=distance, crossCheck=False)
@@ -49,6 +49,6 @@ class KeypointSimilarity(object):
     def match_keypoints_descriptors(self, vector_1, vector_2, method="flann", distance="l2"):
         #print(len(vector_1),len(vector_2))
         if vector_1 is None or vector_2 is None or len(vector_2) <= 1 or len(vector_1) <= 1:
-            return np.inf
+            return 1000
         #print('returning non zero matching')    
         return self.matching[self.method](vector_1.astype(np.float32), vector_2.astype(np.float32), self.distances[self.distance])
