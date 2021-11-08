@@ -40,7 +40,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-M1-Introduction to human and computer vision project from  the Msc: Master in Computer Vision Master done by the UAB.This repository is maintained mainly by Marcelo Sanchez Ortega,Manel Guzmán Casterllana,Sergi Vidal and Gia.
+M1-Introduction to human and computer vision project from  the Msc: Master in Computer Vision Master done by the UAB.This repository is maintained mainly by Marcelo Sanchez Ortega,Manel Guzmán Castellana,Sergi Vidal and Jiaqiang Ye Zhu.
 
 The main goal is to learn the basic concepts and techniques to build a simple query by example retrieval system for finding paintings in a museum image collection.
 
@@ -149,7 +149,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Marcelo Sanchez Ortega - marcelosanchezortega@gmail.com
 
-Manel Guzmán Casterllana - manelguz7@gmail.com
+Manel Guzmán Castellana - manelguz7@gmail.com
 
 Jiaqiang Ye Zhu - jiaqiang.ye@autonoma.cat
 
