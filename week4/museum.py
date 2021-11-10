@@ -92,12 +92,12 @@ class Museum(object):
     
     def compute_similarity(self, image_set:str, text_extractor_method:callable):
         set_result = []
-        print(image_set)
+        #print(image_set)
         if os.path.isdir(image_set):
             for image in os.listdir(image_set):
                 #try:
                     query_img = self.load_query_img(os.path.join(image_set,image))
-                    print(image)
+                    #print(image)
                     if self.rm_noise:
                         img_gray = cv2.cvtColor(query_img, cv2.COLOR_BGR2GRAY) 
                         if  self.noise_remover.is_noisy_img(img_gray):

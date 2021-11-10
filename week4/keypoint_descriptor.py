@@ -72,8 +72,10 @@ class KeypointDescriptor(object):
         for image in dataset.keys():
             #image_hist = self.compute_descriptor(dataset[image]["image_obj"])
             #print(dataset[image])
-            sim_result = self.similarity.match_keypoints_descriptors(dataset[image]["descriptor"], query_img_features)          
-            #img3 = cv2.drawMatches(dataset[image]['image_obj'],dataset[image]["keypoints"],query_img,keypoints,matches[:10],None, flags=2)
-            #cv2.imwrite('/home/marcelo/Documents/Master_CV/M1/'+dataset[image]["image_name"],img3)
-            result.append([image, sim_result])
+            sim_result = self.similarity.match_keypoints_descriptors(dataset[image]["descriptor"], query_img_features)
+            #print(sim_result,'at similarity')
+            if sim_result[0] != 10000:        
+                img3 = cv2.drawMatches(dataset[image]['image_obj'],dataset[image]["keypoints"],query_img,keypoints,sim_result[1][:10],None, flags=2)
+                print(cv2.imwrite('/home/marcelo/Documents/MSC_CV/M1/'+dataset[image]["image_name"],img3))
+            result.append([image, sim_result[0]])
         return result
