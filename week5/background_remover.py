@@ -4,7 +4,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.lib.histograms import histogram
-import results
 from noise_remover import NoiseRemover
 
 #Techniques like Wathershed, Canny, etc... Are considered "illegal"
@@ -284,26 +283,26 @@ class Canvas(object):
                 #print('Successfully generated and saved',filename)
     """
 
-    def get_rectangle_to_crop(img, angle):
+    def get_rectangle_to_crop(self, img, frames_pos):
         rows,cols = img.shape[0], img.shape[1]
-        M = cv.getRotationMatrix2D((cols/2,rows/2),angle,1)
+        M = cv.getRotationMatrix2D((cols/2,rows/2),frames_pos[4],1)
         img_rot = cv.warpAffine(img,M,(cols,rows))
 
         # rotate bounding box
-        rect0 = (rect[0], rect[1], 0.0) 
-        box = cv.boxPoints(rect0)
+        box = cv.boxPoints(((frames_pos[0],frames_pos[1]), (frames_pos[2],frames_pos[3]), frames_pos[4]))
         pts = np.int0(cv.transform(np.array([box]), M))[0]    
         pts[pts < 0] = 0
 
         # crop
         img_crop = img_rot[pts[1][1]:pts[0][1], 
                             pts[1][0]:pts[2][0]]
+        return img_crop
 
-    def crop_image(self,img,save_directory_croped,frames_pos,f, angle):
+    def crop_image(self,img,save_directory_croped,frames_pos,f):
         file_name = os.path.splitext(f)[0]
         for idx, frame in enumerate(frames_pos):
-            x,y,w,h = frame
-            croped_img = img[y:y+h, x:x+w]
+            #x,y,w,h, angle = frame
+            croped_img = self.get_rectangle_to_crop(img, frame)
             filename = 'crop_'+file_name+ '_' + str(idx+1) + '.jpg'
             file_path = os.path.join(save_directory_croped, filename)
             cv.imwrite(file_path, croped_img)
@@ -361,7 +360,7 @@ class Canvas(object):
                 print(angle)
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 255, 0), 3)
                 #x,y,w,h = cv.boundingRect(hull)
-                resulting_frame_pos.append([x,y,w,h])
+                resulting_frame_pos.append([x,y,w,h, angle])
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 0, 255), 3)
                 cv.drawContours(img_to_draw,[box],0,(0,255,0),2)
                 cv.drawContours(canvas,[box],0,(255, 255, 255), -1)
@@ -390,7 +389,7 @@ class Canvas(object):
             cv.destroyAllWindows()
         # If no detected frame we will take all the image
         if len(resulting_frame_pos) < 1:
-            resulting_frame_pos.append([0, 0, img.shape[1], img.shape[0]])
+            resulting_frame_pos.append([0, 0, img.shape[1], img.shape[0], 0])
         return resulting_frame_pos, canvas
 
     def background_remover(self,path,save_path,save_path_croped,f):
@@ -405,7 +404,7 @@ class Canvas(object):
         #connected_img,cx,cy,x,y,w,h,x2,y2,w2,h2 = self.connected_componets2(objects_img)
         #final_mask = self.gray2rgb(mask)
         self.save_mask(mask,mask,img,"","",save_path,f)
-        self.crop_image(img,save_path_croped,frames_pos,f, angle)
+        self.crop_image(img,save_path_croped,frames_pos,f)
         #return final_mask,x,y,w,h,x2,y2,w2,h2
         return mask, frames_pos 
 
