@@ -191,46 +191,45 @@ if args.rm_background:
 
 
 if os.path.isdir(query_image_path):
-    for i in range(k):
-        final_result = []
-        for original_image in sorted(os.listdir(query_image_path)):
-            if museum_similarity_comparator.file_is_image(os.path.join(query_image_path, original_image)):
-                image_set = [
-                    "crop_{}_1.jpg".format(original_image.split(".")[0]), 
-                    "crop_{}_2.jpg".format(original_image.split(".")[0]),
-                    "crop_{}_3.jpg".format(original_image.split(".")[0])
-                ] if args.rm_background else [original_image]
-                img_path = CANVAS_TMP_FOLDER_CROPPED if args.rm_background else query_image_path
-                img_set_res = []                     
-                for image in image_set:
-                    if os.path.isfile(os.path.join(img_path, image)):
-                        try:
-                            # working multiscale
-                            result = museum_similarity_comparator.compute_similarity(
-                                os.path.join(img_path, image), text_extractor_method=descriptor_text.text_extraction
-                            )
-                            #print(result)
-                            # working at given image size
-                            #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
-                        except museum.FileIsNotImageError:
-                            continue
-                        if len(weights) > 1:
-                            result = weight_results_and_normalize_metrics(result, weights)
-                        else:
-                            result = result[0]    
-                        result.sort(key=lambda x: x[1])
-                        #print(result)  # resulting score sorted
-                        result = result[:k]
-                        #print(result)  # take the k elements
-                        # For eache element, get only the image and forget about the actual similarity value
-                        images_id = [key for key, val in result]
-                        average_distance = [val for key, val in result]
-                        #print(sum(average_distance)/len(average_distance))
-                        if average_distance[6] == 10000 or average_distance[6] == 1:
-                            images_id = [-1]                  
+    final_result = []
+    for original_image in sorted(os.listdir(query_image_path)):
+        if museum_similarity_comparator.file_is_image(os.path.join(query_image_path, original_image)):
+            image_set = [
+                "crop_{}_1.jpg".format(original_image.split(".")[0]), 
+                "crop_{}_2.jpg".format(original_image.split(".")[0]),
+                "crop_{}_3.jpg".format(original_image.split(".")[0])
+            ] if args.rm_background else [original_image]
+            img_path = CANVAS_TMP_FOLDER_CROPPED if args.rm_background else query_image_path
+            img_set_res = []                     
+            for image in image_set:
+                if os.path.isfile(os.path.join(img_path, image)):
+                    try:
+                        # working multiscale
+                        result = museum_similarity_comparator.compute_similarity(
+                            os.path.join(img_path, image), text_extractor_method=descriptor_text.text_extraction
+                        )
+                        #print(result)
+                        # working at given image size
+                        #result = museum_similarity_comparator.compute_similarity(os.path.join(query_image_path, image), args.metric)
+                    except museum.FileIsNotImageError:
+                        continue
+                    if len(weights) > 1:
+                        result = weight_results_and_normalize_metrics(result, weights)
+                    else:
+                        result = result[0]    
+                    result.sort(key=lambda x: x[1])
+                    #print(result)  # resulting score sorted
+                    result = result[:k]
+                    #print(result)  # take the k elements
+                    # For eache element, get only the image and forget about the actual similarity value
+                    images_id = [key for key, val in result]
+                    average_distance = [val for key, val in result]
+                    #print(sum(average_distance)/len(average_distance))
+                    if average_distance[3] == 10000 or average_distance[3] == 1:
+                        images_id = [-1]                  
 
-                        img_set_res.append(images_id)
-                final_result.append(img_set_res)
+                    img_set_res.append(images_id)
+            final_result.append(img_set_res)
         
         if args.ground_truth is not None:
             gt = results.ground_truth(args.ground_truth)
