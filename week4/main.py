@@ -234,7 +234,6 @@ if os.path.isdir(query_image_path):
         if args.ground_truth is not None:
             gt = results.ground_truth(args.ground_truth)
             mapk_result = mapk(gt, final_result, k=k)
-            print("Resulting Mapk with {}:".format(i))
             print(mapk_result)
             print('predicted labels')
             print(final_result)
