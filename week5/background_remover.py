@@ -321,7 +321,7 @@ class Canvas(object):
         # apply automatic Canny edge detection using the computed median
         lower = int(max(0, (1.0 - sigma) * median))
         upper = int(min(255, (1.0 + sigma) * median))
-        edged = cv.Canny(img, lower, upper)
+        edged = cv.Canny(img, 50, 170)
         # return the edged image
         return edged
 
@@ -331,14 +331,14 @@ class Canvas(object):
         canvas = np.zeros(img.shape, np.uint8)
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         #smoth the image
-        blur = cv.GaussianBlur(gray,(5, 5), 0)
+        blur = cv.GaussianBlur(gray,(7, 7), 0)
         sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
         gray = cv.filter2D(blur, -1, sharpen_kernel)
         # apply Canny edge detection using a wide threshold, tight
         # threshold, and automatically determined threshold
         edges = self.compute_edges(gray)
 
-        kernel = cv.getStructuringElement(cv.MORPH_RECT,(9,9))
+        kernel = cv.getStructuringElement(cv.MORPH_RECT,(13,13))
         edges = cv.morphologyEx(edges, cv.MORPH_CLOSE, kernel, iterations=3)
 
         #kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE,(15,15))
@@ -427,9 +427,9 @@ valid_images = [".jpg"]
 load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\'
 save_direcory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\generated_masks'
 save_directory_croped = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\croped'
-load_directory = "/home/manelguz/master_cv/m1/Team3/datasets/qsd1_w5/"
-save_direcory = '/home/manelguz/master_cv/m1/Team3/datasets/qsd1_w5/generated_masks'
-save_directory_croped = '/home/manelguz/master_cv/m1/Team3/datasets/qsd1_w5/cropped'
+load_directory = "/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/"
+save_direcory = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/generated_masks'
+save_directory_croped = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/cropped'
 if __name__ == "__main__":
 
     museum = Canvas()
