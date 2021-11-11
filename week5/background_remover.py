@@ -308,8 +308,15 @@ class Canvas(object):
             cv.imwrite(file_path, croped_img)
             #cv.imwrite(filename, croped_img)
             print('Successfully generated and saved',filename)
+    
+    def refine_angle(self, angle):
+        if angle > 80:
+            angle = -90+angle
+        elif angle < -80:
+            angle = 90 + angle
+        return angle
 
-    def compute_edges(self, img, sigma=0.53):
+    def compute_edges(self, img, sigma=0.9):
         median = np.median(img)
         # apply automatic Canny edge detection using the computed median
         lower = int(max(0, (1.0 - sigma) * median))
@@ -323,14 +330,20 @@ class Canvas(object):
         # get a blank canvas for drawing contour on and convert img to grayscale
         canvas = np.zeros(img.shape, np.uint8)
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        #smoth the image
+        blur = cv.GaussianBlur(gray,(5, 5), 0)
+        sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+        gray = cv.filter2D(blur, -1, sharpen_kernel)
         # apply Canny edge detection using a wide threshold, tight
         # threshold, and automatically determined threshold
         edges = self.compute_edges(gray)
-        kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE,(15,15))
-        edges = cv.dilate(edges, kernel)
-        edges = cv.erode(edges,  np.ones((7,7), np.uint8))
-        edges = cv.dilate(edges,  np.ones((7,7), np.uint8))
-        edges = cv.erode(edges,  np.ones((7,7), np.uint8))
+
+        kernel = cv.getStructuringElement(cv.MORPH_RECT,(9,9))
+        edges = cv.morphologyEx(edges, cv.MORPH_CLOSE, kernel, iterations=3)
+
+        #kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE,(15,15))
+        #edges = cv.dilate(edges, kernel)
+         
         #edges = cv.erode(edges, None)
         _ ,contours, _ = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         # find the main island (biggest area)
@@ -350,7 +363,7 @@ class Canvas(object):
                 #cv.imshow("Original", img)
                 #cv.waitKey(0)
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 255, 0), 3)
-                pos,lenght,angle = cv.minAreaRect(cnt)
+                pos,lenght,angle = cv.minAreaRect(hull)
                 box = cv.boxPoints((pos,lenght,angle))
                 box = np.int0(box)
                 x,y = np.int0(pos)
@@ -358,6 +371,7 @@ class Canvas(object):
                 print(x,y)
                 print(w,h)
                 print(angle)
+                angle = self.refine_angle(angle)
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 255, 0), 3)
                 #x,y,w,h = cv.boundingRect(hull)
                 resulting_frame_pos.append([x,y,w,h, angle])
@@ -396,8 +410,9 @@ class Canvas(object):
         img = self.input_image(path)
         img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY) 
         if  self.noise_remover.is_noisy_img(img_gray):
-            denoised_img = self.noise_remover.remove_noise(img, "median", 3)
+            denoised_img = self.noise_remover.remove_noise(img, "median", 5)
             img = denoised_img
+        # smoth the image
         frames_pos, mask = self.compute_background(img)
         #simplifyed_img, histogram, result = self.simplify_irrelevant(img)
         #objects_img, mask = self.make_bin_and_objects(simplifyed_img)
@@ -412,9 +427,9 @@ valid_images = [".jpg"]
 load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\'
 save_direcory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\generated_masks'
 save_directory_croped = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\croped'
-load_directory = "/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/"
-save_direcory = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/generated_masks'
-save_directory_croped = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/cropped'
+load_directory = "/home/manelguz/master_cv/m1/Team3/datasets/qsd1_w5/"
+save_direcory = '/home/manelguz/master_cv/m1/Team3/datasets/qsd1_w5/generated_masks'
+save_directory_croped = '/home/manelguz/master_cv/m1/Team3/datasets/qsd1_w5/cropped'
 if __name__ == "__main__":
 
     museum = Canvas()
