@@ -8,7 +8,7 @@ from noise_remover import NoiseRemover
 
 #Techniques like Wathershed, Canny, etc... Are considered "illegal"
 
-MIN_AREA_IMG_RATIO = 1/12
+MIN_AREA_IMG_RATIO = 1/15
 MAX_N_FRAMES = 3
 debug=False
 
