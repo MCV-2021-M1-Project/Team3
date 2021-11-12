@@ -285,11 +285,12 @@ class Canvas(object):
 
     def get_rectangle_to_crop(self, img, frames_pos):
         rows,cols = img.shape[0], img.shape[1]
-        M = cv.getRotationMatrix2D((cols/2,rows/2),frames_pos[4],1)
+        M = cv.getRotationMatrix2D((cols/2,rows/2),-frames_pos[4],1)
         img_rot = cv.warpAffine(img,M,(cols,rows))
-
+        title ="Display frame"
         # rotate bounding box
-        box = cv.boxPoints(((frames_pos[0],frames_pos[1]), (frames_pos[2],frames_pos[3]), frames_pos[4]))
+        print(frames_pos)
+        box = cv.boxPoints(((frames_pos[0],frames_pos[1]), (frames_pos[2],frames_pos[3]), -frames_pos[4]))
         pts = np.int0(cv.transform(np.array([box]), M))[0]    
         pts[pts < 0] = 0
 
@@ -310,10 +311,14 @@ class Canvas(object):
             print('Successfully generated and saved',filename)
     
     def refine_angle(self, angle):
-        if angle > 80:
-            angle = -90+angle
-        elif angle < -80:
-            angle = 90 + angle
+        print(angle)
+        if -88 < angle < -45:
+            angle = -90 + abs(angle)
+        elif -10 > angle >= -45:
+            angle = abs(angle)
+        elif angle < -88:
+            angle = angle + 90
+        print(angle)
         return angle
 
     def compute_edges(self, img, sigma=0.9):
@@ -325,8 +330,27 @@ class Canvas(object):
         # return the edged image
         return edged
 
+    def sort_coord(self, box_cord):
+        res = []
+        new_box = []
+        box_cord = box_cord.tolist()
+        for box in box_cord:
+            res.append(box[0] * box[1])
+        new_box.append(box_cord[np.argmin(res)])
+        new_box.append(box_cord[np.argmax(res)])
+        box_cord.remove(new_box[0])
+        box_cord.remove(new_box[1])
+        if box_cord[0][0] > box_cord[1][0]:
+            new_box.append(box_cord[0])
+            new_box.append(box_cord[1])
+        else:
+            new_box.append(box_cord[1])
+            new_box.append(box_cord[0])
+        return [new_box[0], new_box[2], new_box[1], new_box[3]]
+
     def compute_background(self, img):
         resulting_frame_pos = []
+        list_boxes_sorted = []
         # get a blank canvas for drawing contour on and convert img to grayscale
         canvas = np.zeros(img.shape, np.uint8)
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -366,15 +390,19 @@ class Canvas(object):
                 pos,lenght,angle = cv.minAreaRect(hull)
                 box = cv.boxPoints((pos,lenght,angle))
                 box = np.int0(box)
-                x,y = np.int0(pos)
-                w,h = np.int0(lenght)
-                print(x,y)
-                print(w,h)
+                x,y= pos
+                w,h=lenght
+                print("box sorted")
+                box_sorted = self.sort_coord(box)
+                print(box_sorted)
                 print(angle)
                 angle = self.refine_angle(angle)
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 255, 0), 3)
                 #x,y,w,h = cv.boundingRect(hull)
-                resulting_frame_pos.append([x,y,w,h, angle])
+                box_sorted.append(angle)
+                resulting_frame_pos.append([x,y,w,h,angle])
+                list_boxes_sorted.append(box_sorted)
+                print(resulting_frame_pos)
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 0, 255), 3)
                 cv.drawContours(img_to_draw,[box],0,(0,255,0),2)
                 cv.drawContours(canvas,[box],0,(255, 255, 255), -1)
@@ -404,7 +432,7 @@ class Canvas(object):
         # If no detected frame we will take all the image
         if len(resulting_frame_pos) < 1:
             resulting_frame_pos.append([0, 0, img.shape[1], img.shape[0], 0])
-        return resulting_frame_pos, canvas
+        return resulting_frame_pos, canvas, list_boxes_sorted
 
     def background_remover(self,path,save_path,save_path_croped,f):
         img = self.input_image(path)
@@ -413,7 +441,8 @@ class Canvas(object):
             denoised_img = self.noise_remover.remove_noise(img, "median", 5)
             img = denoised_img
         # smoth the image
-        frames_pos, mask = self.compute_background(img)
+        frames_pos, mask, list_boxes_sorted = self.compute_background(img)
+        print(list_boxes_sorted)
         #simplifyed_img, histogram, result = self.simplify_irrelevant(img)
         #objects_img, mask = self.make_bin_and_objects(simplifyed_img)
         #connected_img,cx,cy,x,y,w,h,x2,y2,w2,h2 = self.connected_componets2(objects_img)
@@ -427,14 +456,15 @@ valid_images = [".jpg"]
 load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\'
 save_direcory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\generated_masks'
 save_directory_croped = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\croped'
-load_directory = "/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/"
-save_direcory = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/generated_masks'
-save_directory_croped = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/cropped'
+load_directory = "/home/manelguz/master_cv/m1//Team3/datasets/qsd1_w5/"
+save_direcory = '/home/manelguz/master_cv/m1//Team3/datasets/qsd1_w5/generated_masks'
+save_directory_croped = '/home/manelguz/master_cv/m1//Team3/datasets/qsd1_w5/cropped'
 if __name__ == "__main__":
 
     museum = Canvas()
     for f in sorted(os.listdir(load_directory)):        
         ##print(f)
+        #f = "00010.jpg"
         file_name = typex = os.path.splitext(f)[0]
         typex = os.path.splitext(f)[1]
         ##print(typex)
