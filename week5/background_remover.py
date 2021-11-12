@@ -311,14 +311,12 @@ class Canvas(object):
             print('Successfully generated and saved',filename)
     
     def refine_angle(self, angle):
-        print(angle)
         if -88 < angle < -45:
             angle = -90 + abs(angle)
         elif -10 > angle >= -45:
             angle = abs(angle)
         elif angle < -88:
             angle = angle + 90
-        print(angle)
         return angle
 
     def compute_edges(self, img, sigma=0.9):
@@ -380,7 +378,6 @@ class Canvas(object):
             #print(approx)
             # show the images
             if max_area/ (img.shape[0] * img.shape[1]) > MIN_AREA_IMG_RATIO:
-                print(max_area)
                 #epsilon = 0.1*cv.arcLength(cnt,True)
                 #approx = cv.approxPolyDP(cnt,epsilon,True)
                 hull = cv.convexHull(cnt)
@@ -392,16 +389,13 @@ class Canvas(object):
                 box = np.int0(box)
                 x,y= pos
                 w,h=lenght
-                print("box sorted")
                 box_sorted = self.sort_coord(box)
-                print(box_sorted)
-                print(angle)
                 angle = self.refine_angle(angle)
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 255, 0), 3)
                 #x,y,w,h = cv.boundingRect(hull)
-                box_sorted.append(angle)
+                box_final = [angle,box_sorted]
                 resulting_frame_pos.append([x,y,w,h,angle])
-                list_boxes_sorted.append(box_sorted)
+                list_boxes_sorted.append(box_final)
                 print(resulting_frame_pos)
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 0, 255), 3)
                 cv.drawContours(img_to_draw,[box],0,(0,255,0),2)
@@ -450,15 +444,15 @@ class Canvas(object):
         self.save_mask(mask,mask,img,"","",save_path,f)
         self.crop_image(img,save_path_croped,frames_pos,f)
         #return final_mask,x,y,w,h,x2,y2,w2,h2
-        return mask, frames_pos 
+        return mask, list_boxes_sorted 
 
 valid_images = [".jpg"]
 load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\'
 save_direcory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\generated_masks'
 save_directory_croped = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\croped'
-load_directory = "/home/manelguz/master_cv/m1//Team3/datasets/qsd1_w5/"
-save_direcory = '/home/manelguz/master_cv/m1//Team3/datasets/qsd1_w5/generated_masks'
-save_directory_croped = '/home/manelguz/master_cv/m1//Team3/datasets/qsd1_w5/cropped'
+load_directory = "/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/"
+save_direcory = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/generated_masks'
+save_directory_croped = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/cropped'
 if __name__ == "__main__":
 
     museum = Canvas()
