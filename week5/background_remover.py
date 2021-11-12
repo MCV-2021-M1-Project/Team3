@@ -287,9 +287,7 @@ class Canvas(object):
         rows,cols = img.shape[0], img.shape[1]
         M = cv.getRotationMatrix2D((cols/2,rows/2),-frames_pos[4],1)
         img_rot = cv.warpAffine(img,M,(cols,rows))
-        title ="Display frame"
         # rotate bounding box
-        print(frames_pos)
         box = cv.boxPoints(((frames_pos[0],frames_pos[1]), (frames_pos[2],frames_pos[3]), -frames_pos[4]))
         pts = np.int0(cv.transform(np.array([box]), M))[0]    
         pts[pts < 0] = 0
@@ -345,6 +343,14 @@ class Canvas(object):
             new_box.append(box_cord[1])
             new_box.append(box_cord[0])
         return [new_box[0], new_box[2], new_box[1], new_box[3]]
+    
+    def compute_angle(self, bottom_1, bottom_2):
+        import math
+        tangent=np.sqrt((bottom_1[0]-bottom_2[0])**2 + (bottom_1[1]-bottom_2[1])**2)
+        angle = np.arccos(
+            (bottom_2[0]-bottom_1[0]) / tangent
+        )
+        return math.degrees(angle)
 
     def compute_background(self, img):
         resulting_frame_pos = []
@@ -391,12 +397,12 @@ class Canvas(object):
                 w,h=lenght
                 box_sorted = self.sort_coord(box)
                 angle = self.refine_angle(angle)
+                mod_angle = self.compute_angle(box_sorted[2], box_sorted[3])
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 255, 0), 3)
                 #x,y,w,h = cv.boundingRect(hull)
-                box_final = [angle,box_sorted]
                 resulting_frame_pos.append([x,y,w,h,angle])
+                box_final = [mod_angle,box_sorted]
                 list_boxes_sorted.append(box_final)
-                print(resulting_frame_pos)
                 #cv.drawContours(img_to_draw, cnt, -1, (0, 0, 255), 3)
                 cv.drawContours(img_to_draw,[box],0,(0,255,0),2)
                 cv.drawContours(canvas,[box],0,(255, 255, 255), -1)
@@ -436,7 +442,6 @@ class Canvas(object):
             img = denoised_img
         # smoth the image
         frames_pos, mask, list_boxes_sorted = self.compute_background(img)
-        print(list_boxes_sorted)
         #simplifyed_img, histogram, result = self.simplify_irrelevant(img)
         #objects_img, mask = self.make_bin_and_objects(simplifyed_img)
         #connected_img,cx,cy,x,y,w,h,x2,y2,w2,h2 = self.connected_componets2(objects_img)
@@ -450,11 +455,13 @@ valid_images = [".jpg"]
 load_directory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\'
 save_direcory = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\generated_masks'
 save_directory_croped = 'C:\\Users\\JQ\\Documents\\GitHub\\ABC\\CV_M1\\W2\\QSD2\\croped'
-load_directory = "/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/"
-save_direcory = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/generated_masks'
-save_directory_croped = '/home/manelguz/m1_cv/Team3/datasets/qsd1_w5/cropped'
+load_directory = "datasets/qsd1_w5/"
+save_direcory = 'datasets/qsd1_w5/generated_masks'
+save_directory_croped = 'datasets/qsd1_w5/cropped'
 if __name__ == "__main__":
-
+    import results
+    result = results.ground_truth("datasets/qsd1_w5/frames.pkl")
+    idx = 0
     museum = Canvas()
     for f in sorted(os.listdir(load_directory)):        
         ##print(f)
@@ -467,5 +474,11 @@ if __name__ == "__main__":
         print(f)
 #        _,x,y,w,h,x2,y2,w2,h2 = museum.background_remover(load_directory + f,save_direcory,save_directory_croped ,file_name)
 
-        mask, frames_pos  = museum.background_remover(load_directory + f,save_direcory,save_directory_croped ,file_name)
+        mask, list_boxes_sorted  = museum.background_remover(load_directory + f,save_direcory,save_directory_croped ,file_name)
+        print("Result")
+        print(result[idx])
+        print("Guess")
+        print(list_boxes_sorted)
+        idx = idx + 1
+
         #print(frames_pos)
