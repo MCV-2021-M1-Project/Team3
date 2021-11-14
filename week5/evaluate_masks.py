@@ -22,6 +22,7 @@ def evaluate_mask(og_mask: np.ndarray, gen_mask: np.ndarray):
     tn = int(np.sum((1 - og_mask) * (1 - gen_mask))) #True Negatives (tn)
     fn = int(np.sum((1 - og_mask) * gen_mask)) #False Negatives (fn)
     fp = int(np.sum(og_mask * (1 - gen_mask))) #False Positives (fp)
+    IoU = tp / np.sum(np.logical_or(og_mask, gen_mask))
   
     try: precision = tp / (tp + fp)
     except ZeroDivisionError:
@@ -36,7 +37,7 @@ def evaluate_mask(og_mask: np.ndarray, gen_mask: np.ndarray):
     else:
         f1 = 2 * precision * recall / (precision + recall)
     
-    return precision, recall, f1, tp, fp, fn, tn
+    return precision, recall, f1, tp, fp, fn, tn, IoU
 
 def intersection_over_union(bbox_predicted, bbox_gt):
 	"""
@@ -89,8 +90,8 @@ if __name__ == '__main__':
         print('Calculated precision img ',f)
         og_mask = cv.imread(load_directory+f)
         gen_mask = cv.imread(save_direcory+'mask_'+f)
-        precision, recall, f1, tp, fp, fn, tn = evaluate_mask(og_mask,gen_mask)
-        print('Precision: ',precision,'Recall: ', recall,'F1: ' ,f1,'TP :', tp,'FP: ', fp,'FN: ', fn, 'TN: ', tn)
+        precision, recall, f1, tp, fp, fn, tn, Iou = evaluate_mask(og_mask,gen_mask)
+        print('Precision: ',precision,'Recall: ', recall,'F1: ' ,f1,'TP :', tp,'FP: ', fp,'FN: ', fn, 'TN: ', tn, 'IoU:', Iou)
 
     ##Example 
     """
