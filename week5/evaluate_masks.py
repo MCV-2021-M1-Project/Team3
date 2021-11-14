@@ -89,7 +89,7 @@ if __name__ == '__main__':
             continue
         print('Calculated precision img ',f)
         og_mask = cv.imread(load_directory+f)
-        gen_mask = cv.imread(save_direcory+'mask_'+f)
+        gen_mask = cv.imread(save_direcory+f)
         precision, recall, f1, tp, fp, fn, tn, Iou = evaluate_mask(og_mask,gen_mask)
         print('Precision: ',precision,'Recall: ', recall,'F1: ' ,f1,'TP :', tp,'FP: ', fp,'FN: ', fn, 'TN: ', tn, 'IoU:', Iou)
 
