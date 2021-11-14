@@ -2,7 +2,7 @@ import os
 from PIL import Image, ImageChops
 from numpy.lib.arraysetops import isin
 import cv2
-from text_extraction import Text
+from text_remover import Text
 from matplotlib import pyplot as plt
 import numpy as np
 from color_descriptor import ColorDescriptor
