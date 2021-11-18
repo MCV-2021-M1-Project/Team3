@@ -8,10 +8,11 @@ class KeypointDescriptor(object):
 
     def __init__(self,descriptor_type:str = 'ORB') -> None:
         self.descriptors = {
-        ##'sift': cv2.xfeatures2d.sift_create(),
-        'surf': cv2.ORB_create(1000),
-        'sift' : cv2.xfeatures2d.SIFT_create(nfeatures=200),
-        'ORB':cv2.ORB_create(nfeatures=1200)}
+            ##'sift': cv2.xfeatures2d.sift_create(),
+            'surf': cv2.ORB_create(1000),
+            'sift' : cv2.xfeatures2d.SIFT_create(nfeatures=400),
+            'ORB':cv2.ORB_create(1000)
+        }
         self.descriptor_type = descriptor_type
         self.similarity = KeypointSimilarity()
         #self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)        
@@ -38,12 +39,14 @@ class KeypointDescriptor(object):
         #mask = self.compute_hist_mask(image, bbox)
         #if mask is not None:
         #    image = cv2.bitwise_and(image, image, mask=mask)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
+        image = cv2.resize(image, dsize=(500,500))
         mask = np.ones(image.shape[:2], dtype=np.uint8)*255
         if bbox is not None:
             cv2.rectangle(mask, (bbox[0],bbox[1]), (bbox[2],bbox[3]), (0), thickness = -1)        
             keypoints_2, descriptors_2 = self.descriptors[self.descriptor_type].detectAndCompute(image,mask)
         else:
-            keypoints_2, descriptors_2 = self.descriptors[self.descriptor_type].detectAndCompute(image,mask)
+            keypoints_2, descriptors_2 = self.descriptors[self.descriptor_type].detectAndCompute(image,None)
         return keypoints_2, descriptors_2
     def compute_similarity(self,image_descriptor,query_image_descriptor):
         matches = self.matcher.match(image_descriptor,query_image_descriptor)
@@ -73,24 +76,13 @@ class KeypointDescriptor(object):
         else:
             bbox_query = None
             print('bbox query is none')
-        #print(bbox_query)    
-        keypoints, query_img_features = self.compute_descriptor(query_img, bbox_query)
-        #print(query_img_features)
+        keypoints, query_img_features = self.compute_descriptor(query_img, None)
         for image in dataset.keys():
-            #image_hist = self.compute_descriptor(dataset[image]["image_obj"])
-            #print(dataset[image])
-            if dataset[image]["descriptor"] is None:
-                pass
-                #print(dataset[image]["image_name"], 'IS NONE')
-            #print(len(dataset[image]["descriptor"]))
-            #print(len(query_img_features))
+
             sim_result = self.similarity.match_keypoints_descriptors(dataset[image]["descriptor"], query_img_features)
-            #print(sim_result)
-            #print(sim_result,'at similarity')
-            if sim_result[0] != 10000:
-                query_img = cv2.rectangle(query_img, (bbox_query[0], bbox_query[1]), (bbox_query[2], bbox_query[3]), (255,0,0), 2)
-                #print(sim_result[1])
-                img3 = cv2.drawMatchesKnn(dataset[image]['image_obj'],dataset[image]["keypoints"],query_img,keypoints,sim_result[1],None, flags=2)                
+
+            #if sim_result[0] != 10000:
+                #img3 = cv2.drawMatchesKnn(dataset[image]['image_obj'],keypoints_dataset,query_img,keypoints,sim_result[1],None, flags=2)                
                 #print(cv2.imwrite('/home/marcelo/Documents/Master_CV/M1/'+dataset[image]["image_name"],img3))
             result.append([image, sim_result[0]])
         return result

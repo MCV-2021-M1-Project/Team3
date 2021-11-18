@@ -189,7 +189,7 @@ if args.rm_background:
         query_image_path, "coordinates_mask_original_image.pkl"))
     #query_image_path = CANVAS_TMP_FOLDER_CROPPED
 
-
+N_IMAGES_THESH = 3 # number matches to consider an image part of dataset
 if os.path.isdir(query_image_path):
     final_result = []
     for original_image in sorted(os.listdir(query_image_path)):
@@ -216,17 +216,15 @@ if os.path.isdir(query_image_path):
                     if len(weights) > 1:
                         result = weight_results_and_normalize_metrics(result, weights)
                     else:
-                        result = result[0]    
+                        result = result[0]
                     result.sort(key=lambda x: x[1])
-                    #print(result)  # resulting score sorted
-                    result = result[:k]
-                    #print(result)  # take the k elements
-                    # For eache element, get only the image and forget about the actual similarity value
-                    images_id = [key for key, val in result]
-                    average_distance = [val for key, val in result]
-                    #print(sum(average_distance)/len(average_distance))
-                    if average_distance[3] == 10000 or average_distance[3] == 1:
-                        images_id = [-1]                  
+                    if "keypoint" in args.descriptor:
+                        average_distance = [val for key, val in result]
+                        if average_distance[N_IMAGES_THESH] == 10000:
+                            images_id = [-1]
+                        else:
+                            result = result[:k]
+                            images_id = [key for key, val in result]
 
                     img_set_res.append(images_id)
             final_result.append(img_set_res)
@@ -238,7 +236,7 @@ if os.path.isdir(query_image_path):
             print('predicted labels')
             print(final_result)
             print("Ground Truth")
-            print(gt)
+            print(gt[:len(final_result)])
 else:
     # working multiscale
     result = museum_similarity_comparator.compute_similarity(

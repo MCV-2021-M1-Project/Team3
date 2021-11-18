@@ -376,8 +376,9 @@ class Canvas(object):
         _ ,contours, _ = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         # find the main island (biggest area)
         contours = sorted(contours, key=cv.contourArea, reverse=True)
-
-        for cnt in contours[:MAX_N_FRAMES]:
+        contours = contours[:MAX_N_FRAMES]
+        contours = sorted(contours, key=lambda contours: cv.boundingRect(contours)[0])
+        for cnt in contours:
             img_to_draw = img.copy()
             max_area = cv.contourArea(cnt)
             # define main island contour approx. and hull
